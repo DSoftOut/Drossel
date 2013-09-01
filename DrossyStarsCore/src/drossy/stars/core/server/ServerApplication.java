@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Foguan Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
-package drossy.stars.core;
+package drossy.stars.core.server;
 
 import com.jme3.app.Application;
 import com.jme3.scene.Node;

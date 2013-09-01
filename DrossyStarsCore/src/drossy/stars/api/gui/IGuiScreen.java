@@ -15,30 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with Foguan Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
-package drossy.stars.core;
-
-import drossy.stars.core.server.ServerApplication;
-import drossy.stars.core.client.ClientApplication;
+package drossy.stars.api.gui;
 
 /**
- * Entry point of foguan application. The only thing it should do is
- * loading engine core.
+ * Parent interface for all gui screens.
  * @author ncrashed
  */
-public class Main 
+public interface IGuiScreen 
 {
-    private static StartOptions options;
-
-    public static void main(String[] args) 
-    {
-        options = new StartOptions(args);
-        
-        if(options.side.isServer())
-        {
-            new ServerApplication().start();
-        } else
-        {
-            new ClientApplication().start();
-        }
-    }
+    /**
+     * Name of gui screen.
+     * @return 
+     */
+    String getName();
+    
+    /**
+     * Shows screen. If any another screen is active now, hides it.
+     */
+    void show();
+    
+    /**
+     * Rebuild screen content. If screen content changes dynamically
+     * this method will refresh the screen.
+     */
+    void rebuild();
 }

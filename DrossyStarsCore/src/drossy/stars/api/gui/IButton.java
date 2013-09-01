@@ -15,30 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with Foguan Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
-package drossy.stars.core;
-
-import drossy.stars.core.server.ServerApplication;
-import drossy.stars.core.client.ClientApplication;
+package drossy.stars.api.gui;
 
 /**
- * Entry point of foguan application. The only thing it should do is
- * loading engine core.
+ * This interface only describe logic of a button not visual style. Button
+ * is a action, that activates when user press the button.
  * @author ncrashed
  */
-public class Main 
+public interface IButton extends IWidget
 {
-    private static StartOptions options;
-
-    public static void main(String[] args) 
-    {
-        options = new StartOptions(args);
-        
-        if(options.side.isServer())
-        {
-            new ServerApplication().start();
-        } else
-        {
-            new ClientApplication().start();
-        }
-    }
+    /**
+     * Returns button caption to display.
+     * @return 
+     */
+    String getCaption();
+    
+    /**
+     * Calls underlying button action.
+     */
+    void apply();
 }

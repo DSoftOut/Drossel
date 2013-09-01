@@ -15,30 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with Foguan Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
-package drossy.stars.core;
+package drossy.stars.api.gui.mainmenu;
 
-import drossy.stars.core.server.ServerApplication;
-import drossy.stars.core.client.ClientApplication;
+import drossy.stars.api.gui.IButton;
+import drossy.stars.api.gui.IGuiScreen;
 
 /**
- * Entry point of foguan application. The only thing it should do is
- * loading engine core.
+ * Application main menu. It handles set of buttons to access another screens.
+ * 
  * @author ncrashed
  */
-public class Main 
+public interface IMainMenu extends IGuiScreen
 {
-    private static StartOptions options;
-
-    public static void main(String[] args) 
-    {
-        options = new StartOptions(args);
-        
-        if(options.side.isServer())
-        {
-            new ServerApplication().start();
-        } else
-        {
-            new ClientApplication().start();
-        }
-    }
+    /**
+     * Add button to main menu.
+     * @param button 
+     */
+    void addButton(IButton button);
+    
+    /**
+     * Retrusn button by name;
+     * @param name
+     * @return Button if name exists and null if not finded.
+     */
+    IButton getButton(String name);
 }

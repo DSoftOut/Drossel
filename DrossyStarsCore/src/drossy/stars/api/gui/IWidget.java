@@ -15,42 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with Foguan Engine.  If not, see <http://www.gnu.org/licenses/>.
  */
-package drossy.stars.core;
-
-import com.jme3.app.SimpleApplication;
-import com.jme3.renderer.RenderManager;
-import drossy.stars.api.IDrossyStarsCore;
-import drossy.stars.api.Side;
+package drossy.stars.api.gui;
 
 /**
- * Client realization of IDrossyStarsCore and client application base class.
+ * Widget is parent interface for all logic gui interfaces.
  * @author ncrashed
  */
-public class ClientApplication extends SimpleApplication 
-    implements IDrossyStarsCore
+public interface IWidget 
 {
     /**
-     * Get loaded side.
-     * @return Side.SERVER if server side and Side.CLIENT if client side.
+     * Return name of the widget.
+     * @return 
      */
-    @Override
-    public Side getSide()
-    {
-        return Side.CLIENT;
-    }
-    
-    @Override
-    public void simpleInitApp() 
-    {
-    }
-
-    @Override
-    public void simpleUpdate(float tpf) 
-    {
-    }
-
-    @Override
-    public void simpleRender(RenderManager rm) 
-    {
-    }
+    String getName();
 }

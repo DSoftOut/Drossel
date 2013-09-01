@@ -24,7 +24,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.input.InputManager;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import de.lessvoid.nifty.Nifty;
-import de.lessvoid.nifty.screen.Screen;
+import drossy.stars.api.IGameState;
 import drossy.stars.api.gui.IButton;
 import drossy.stars.api.gui.mainmenu.IMainMenu;
 import drossy.stars.core.client.ClientApplication;
@@ -34,20 +34,19 @@ import drossy.stars.core.client.ClientApplication;
  * starting the game.
  * @author ncrashed
  */
-public class MainMenuState extends AbstractAppState
+public class MainMenuState extends AbstractAppState implements IGameState
 {
     private ClientApplication   app;
     private AssetManager        assetManager;
-    private AppStateManager     stateManager;
     private InputManager        inputManager;
     private Nifty               nifty;
-    private Screen              screen;
     private NiftyJmeDisplay     niftyDisplay;
     private IMainMenu           mainMenu;
     
-    public MainMenuState()
+    public MainMenuState(ClientApplication app)
     {
         super();
+        this.app = app;
     }
     
     @Override
@@ -55,10 +54,8 @@ public class MainMenuState extends AbstractAppState
     {
         super.initialize(stateManager, app);
         
-        this.app = (ClientApplication) app;
-        this.assetManager = this.app.getAssetManager();
-        this.stateManager = this.app.getStateManager();
-        this.inputManager = this.app.getInputManager();
+        assetManager = app.getAssetManager();
+        inputManager = app.getInputManager();
         
         initNifty();
     }
@@ -126,5 +123,20 @@ public class MainMenuState extends AbstractAppState
     public void quit()
     {
         app.stop(false);
+    }
+
+    public String getName() 
+    {
+        return "mainMenu";
+    }
+
+    public void load() 
+    {
+        app.getStateManager().attach(this);
+    }
+
+    public void unload() 
+    {
+        app.getStateManager().detach(this);
     }
 }

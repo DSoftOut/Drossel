@@ -17,6 +17,8 @@
  */
 package drossy.stars.api;
 
+import java.util.Set;
+
 /**
  * The main interface of whole Drossy Stars engine. It handles all subsystems
  * and controls mod loading.
@@ -29,4 +31,30 @@ public interface IDrossyStarsCore
      * @return Side.SERVER if server side and Side.CLIENT if client side.
      */
     Side getSide();
+    
+    /**
+     * Returns current state game is running in.
+     * @return 
+     */
+    IGameState getCurrentState();
+    
+    /**
+     * Return list of available states to transfer game.
+     * @return 
+     */
+    Set<String> getAvailableGameStates();
+    
+    /**
+     * Tries to transfer game to specified game state.
+     * Game state should be registered otherwise do nothing.
+     * @param stateName 
+     */
+    void transferToGameState(String stateName);
+    
+    /**
+     * Registers game state. After calling this function
+     * you can transfer game to this state.
+     * @param state 
+     */
+    void registerGameState(IGameState state) throws GameStateConflictException;
 }

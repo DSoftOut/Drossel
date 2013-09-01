@@ -17,21 +17,22 @@
  */
 package drossy.stars.core.server;
 
-import com.jme3.app.Application;
 import com.jme3.scene.Node;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
-import drossy.stars.api.IDrossyStarsCore;
+import drossy.stars.api.GameStateConflictException;
 import drossy.stars.api.Side;
+import drossy.stars.core.StatedApplication;
 
 /**
  * Server realization of IDrossyStarsCore and server application base class.
  * @author ncrashed
  */
-public class ServerApplication extends Application implements IDrossyStarsCore
+public class ServerApplication extends StatedApplication
 {                                                                   
     protected Node rootNode = new Node("Root Node");
-
+    private ServerMainState mainState = new ServerMainState(this);
+    
     /**
      * Get loaded side.
      * @return Side.SERVER if server side and Side.CLIENT if client side.
@@ -77,6 +78,16 @@ public class ServerApplication extends Application implements IDrossyStarsCore
     {
         super.initialize();
 
+        try 
+        {
+            registerGameState(mainState);
+        } catch (GameStateConflictException ex) 
+        {
+            throw new IllegalStateException("Failed to add main server state!", 
+                    ex);
+        }
+        
+        transferToGameState(mainState.getName());
     }
 
     @Override

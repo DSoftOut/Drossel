@@ -17,21 +17,20 @@
  */
 package drossy.stars.core.client;
 
-import drossy.stars.core.client.gui.mainmenu.MainMenuState;
-import com.jme3.app.SimpleApplication;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
-import drossy.stars.api.IDrossyStarsCore;
+import drossy.stars.api.GameStateConflictException;
 import drossy.stars.api.Side;
+import drossy.stars.core.StatedSimpleApplication;
+import drossy.stars.core.client.gui.mainmenu.MainMenuState;
 
 /**
  * Client realization of IDrossyStarsCore and client application base class.
  * @author ncrashed
  */
-public class ClientApplication extends SimpleApplication 
-    implements IDrossyStarsCore
+public class ClientApplication extends StatedSimpleApplication 
 {
-    private MainMenuState mainMenuState = new MainMenuState();
+    private MainMenuState mainMenuState = new MainMenuState(this);
     
     public ClientApplication()
     {
@@ -60,7 +59,15 @@ public class ClientApplication extends SimpleApplication
     @Override
     public void simpleInitApp() 
     {
-        stateManager.attach(mainMenuState);
+        try 
+        {
+            registerGameState(mainMenuState);
+        } catch (GameStateConflictException ex) 
+        {
+            throw new IllegalStateException("Failed to add main menu state!", ex);
+        }
+        
+        transferToGameState(mainMenuState.getName());
     }
 
     @Override

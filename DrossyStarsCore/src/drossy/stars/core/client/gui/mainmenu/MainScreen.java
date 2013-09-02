@@ -25,7 +25,9 @@ import de.lessvoid.nifty.controls.button.builder.ButtonBuilder;
 import de.lessvoid.nifty.screen.Screen;
 import de.lessvoid.nifty.screen.ScreenController;
 import drossy.stars.api.gui.IButton;
+import drossy.stars.api.gui.mainmenu.IConnectScreen;
 import drossy.stars.api.gui.mainmenu.IMainMenu;
+import drossy.stars.core.client.ClientApplication;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,13 +37,17 @@ import java.util.List;
  */
 public class MainScreen implements IMainMenu, ScreenController
 {
+    private ClientApplication app;
     private Nifty nifty;
     private Screen screen;
     private List<IButton> buttons = new ArrayList<IButton>();
-            
-    public MainScreen(Nifty nifty)
+    private ConnectScreen connectScreen;
+    
+    public MainScreen(Nifty nifty, ClientApplication app)
     {
+        this.app = app;
         this.nifty = nifty;
+        connectScreen = new ConnectScreen(nifty);
         
         rebuild();
     }
@@ -53,6 +59,11 @@ public class MainScreen implements IMainMenu, ScreenController
 
     public void show() 
     {
+        if(!app.getCurrentState().getName().equals(MainMenuState.NAME))
+        {
+            app.transferToGameState(MainMenuState.NAME);
+        }
+        
         nifty.gotoScreen(getName());
     }
 
@@ -95,16 +106,18 @@ public class MainScreen implements IMainMenu, ScreenController
                 panel(new PanelBuilder("buttonPanel") {{
                     childLayout(ChildLayoutType.Vertical);
                     width("30%");
-                    int panelHeight = Math.min(buttons.size()*10, 80);
+                    int panelHeight = Math.min(buttons.size()*8, 80);
                     height(Integer.toString(panelHeight)+"%");
-                    margin("2%");
                     style("nifty-panel-simple");
                     
                     final float btnHeight = 100/(float)buttons.size();
                     for (final IButton btn : buttons)
                     {
                         control(new ButtonBuilder(btn.getName(), btn.getCaption()) {{
-                            width("100%");
+                            width("96%");
+                            marginTop("2%");
+                            marginLeft("2%");
+                            marginRight("2%");
                             height(Float.toString(btnHeight)+"%");
                             interactOnClick("pressButton("+btn.getName()+")");
                         }});
@@ -133,5 +146,10 @@ public class MainScreen implements IMainMenu, ScreenController
         if(btn != null) {
             btn.apply();
         }
+    }
+
+    public IConnectScreen getConnectScreen() 
+    {
+        return connectScreen;
     }
 }

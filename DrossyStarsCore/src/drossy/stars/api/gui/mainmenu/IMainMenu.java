@@ -39,4 +39,11 @@ public interface IMainMenu extends IGuiScreen
      * @return Button if name exists and null if not finded.
      */
     IButton getButton(String name);
+    
+    /**
+     * Returns connect screen. Consists of ip, login, pass fields
+     * to be filled before connection.
+     * @return 
+     */
+    IConnectScreen getConnectScreen();
 }

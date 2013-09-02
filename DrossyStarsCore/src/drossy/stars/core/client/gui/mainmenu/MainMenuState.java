@@ -24,7 +24,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.input.InputManager;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import de.lessvoid.nifty.Nifty;
-import drossy.stars.api.IGameState;
+import drossy.stars.api.IMainMenuState;
 import drossy.stars.api.gui.IButton;
 import drossy.stars.api.gui.mainmenu.IMainMenu;
 import drossy.stars.core.client.ClientApplication;
@@ -34,8 +34,11 @@ import drossy.stars.core.client.ClientApplication;
  * starting the game.
  * @author ncrashed
  */
-public class MainMenuState extends AbstractAppState implements IGameState
+public class MainMenuState extends AbstractAppState 
+    implements IMainMenuState
 {
+    public static final String NAME = "mainMenu";
+    
     private ClientApplication   app;
     private AssetManager        assetManager;
     private InputManager        inputManager;
@@ -88,9 +91,28 @@ public class MainMenuState extends AbstractAppState implements IGameState
         app.getFlyByCamera().setDragToRotate(true);
         inputManager.setCursorVisible(true);
         
-        mainMenu = new MainScreen(nifty);
+        mainMenu = new MainScreen(nifty, app);
         
         mainMenu.addButton(new IButton(){
+
+            public String getCaption() 
+            {
+                return "Connect";
+            }
+
+            public void apply() 
+            {
+                mainMenu.getConnectScreen().show();
+            }
+
+            public String getName() 
+            {
+                return "connectButton";
+            }
+            
+        });
+        
+         mainMenu.addButton(new IButton(){
 
             public String getCaption() 
             {
@@ -127,7 +149,7 @@ public class MainMenuState extends AbstractAppState implements IGameState
 
     public String getName() 
     {
-        return "mainMenu";
+        return NAME;
     }
 
     public void load() 
@@ -138,5 +160,10 @@ public class MainMenuState extends AbstractAppState implements IGameState
     public void unload() 
     {
         app.getStateManager().detach(this);
+    }
+
+    public IMainMenu getMainMenu() 
+    {
+        return mainMenu;
     }
 }

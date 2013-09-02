@@ -21,6 +21,7 @@ import com.jme3.scene.Node;
 import com.jme3.system.AppSettings;
 import com.jme3.system.JmeContext;
 import drossy.stars.api.GameStateConflictException;
+import drossy.stars.api.IMainMenuState;
 import drossy.stars.api.Side;
 import drossy.stars.core.StatedApplication;
 
@@ -107,5 +108,10 @@ public class ServerApplication extends StatedApplication
 
  
         rootNode.updateLogicalState(tpf);
+    }
+
+    public IMainMenuState getMainMenuState() 
+    {
+        return null;
     }
 }

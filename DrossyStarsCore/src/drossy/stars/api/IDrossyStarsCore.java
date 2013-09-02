@@ -17,6 +17,7 @@
  */
 package drossy.stars.api;
 
+import drossy.stars.api.gui.mainmenu.IMainMenu;
 import java.util.Set;
 
 /**
@@ -57,4 +58,13 @@ public interface IDrossyStarsCore
      * @param state 
      */
     void registerGameState(IGameState state) throws GameStateConflictException;
+    
+    /**
+     * Returns main menu state. Only client has main menu, server should
+     * return null for this method.
+     * Note: showing main menu screen will change current game state to main menu
+     * state.
+     * @return Main menu state or null if no main menu in application. 
+     */
+    IMainMenuState getMainMenuState();
 }

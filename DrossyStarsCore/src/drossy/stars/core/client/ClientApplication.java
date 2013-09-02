@@ -20,6 +20,7 @@ package drossy.stars.core.client;
 import com.jme3.renderer.RenderManager;
 import com.jme3.system.AppSettings;
 import drossy.stars.api.GameStateConflictException;
+import drossy.stars.api.IMainMenuState;
 import drossy.stars.api.Side;
 import drossy.stars.core.StatedSimpleApplication;
 import drossy.stars.core.client.gui.mainmenu.MainMenuState;
@@ -78,5 +79,10 @@ public class ClientApplication extends StatedSimpleApplication
     @Override
     public void simpleRender(RenderManager rm) 
     {
+    }
+
+    public IMainMenuState getMainMenuState() 
+    {
+        return mainMenuState;
     }
 }

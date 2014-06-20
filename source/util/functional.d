@@ -19,6 +19,8 @@
 *   Copyright: © 2014 Anton Gushcha
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
+*
+*   More powerfull templates for metaprogramming than std.typetuple provides.
 */
 module util.functional;
 
@@ -205,6 +207,14 @@ unittest
     static assert(is(staticFold!(preferString, void, int, double, bool) == bool));
 }
 
+/**
+*   Compile-time variant of std.range.robin for expression tuples.
+*   
+*   Template expects $(B StrictTuple) list as paramater and returns
+*   new expression tuple where first element is from first expression tuple,
+*   second element is from second tuple and so on, until one of input tuples
+*   doesn't end.
+*/
 template staticRobin(SF...)
 {
     // Calculating minimum length of all tuples

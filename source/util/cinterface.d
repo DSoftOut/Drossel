@@ -33,6 +33,9 @@ import util.functional;
 *   Compile-time interface description is struct with fields and methods without 
 *   implementation. There are no implementations to not use the struct in usual way,
 *   linker will stop you. 
+*
+*   Overloaded methods are handled as expected. Check is provided by name, return type and
+*   parameters types of the method that is looked up.
 */
 template isExpose(Type, Interfaces...)
 {
@@ -43,20 +46,29 @@ template isExpose(Type, Interfaces...)
     
     private template isExposeSingle(Interface)
     {
-        alias intMembers = StrictTuple!(getMembers!Interface); 
+        alias intMembers = StrictTuple!(fieldsAndMethods!Interface); 
         alias intTypes = StrictTuple!(staticReplicate!(Interface, intMembers.expand!().length));
         alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers));
-                
-        private template bindType(Base, string T)
+    
+        private template bindType(Base, string T) // also expanding overloads
         {
-            alias bindType = Tuple!(typeof(mixin(Base.stringof ~ "." ~ T)), T);
+            private template getType(alias T)
+            {
+                alias getType = typeof(T);
+            }
+            
+            alias overloads = staticMap!(getType , Tuple!(__traits(getOverloads, Base, T))); 
+            alias names = staticReplicate!(T, overloads.length);
+            alias bindType = staticRobin!(StrictTuple!overloads, StrictTuple!names);
         }
         
         template checkMember(MemberType, string MemberName)
         {
+            private template Identity(alias A) { alias A Identity; }
+            
             static if(hasMember!(Type, MemberName))
             {
-                enum checkMember = is(typeof(mixin(Type.stringof ~ "." ~ MemberName)) == MemberType);
+                enum checkMember = hasOverload!(Type, MemberType, MemberName);
             }
             else
             {
@@ -101,4 +113,17 @@ version(unittest)
     
     static assert(isExpose!(Test1, CITest1, CITest2));
     static assert(!isExpose!(Test1, CITest3));
+    
+    struct CITest4
+    {
+        bool meth1();
+        int  meth1();
+    }
+    
+    struct Test2
+    {
+        bool meth1() {return true;}
+    }
+    
+    static assert(!isExpose!(Test2, CITest4));
 }

@@ -20,11 +20,12 @@
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
 *
-*   More powerfull templates for metaprogramming than std.typetuple provides.
+*   More powerful templates for meta-programming than std.typetuple provides.
 */
 module util.functional;
 
 import std.typetuple;
+import std.traits;
 
 /**
 *   Simple expression tuple wrapper.
@@ -256,4 +257,214 @@ unittest
     
     alias test2 = staticRobin!(StrictTuple!(1, 2), StrictTuple!(3, 4, 5), StrictTuple!(6, 7));
     static assert([test2]== [1, 3, 6, 2, 4, 7]);
+}
+
+/**
+*   Checks two expression tuples to be equal. 
+*   $(B ET1) and $(B ET2) should be wrapped to $(B StrictTuple).
+*/
+template staticEqual(alias ET1, alias ET2)
+{
+    alias T1 = ET1.expand!();
+    alias T2 = ET2.expand!();
+    
+    static if(T1.length == 0 || T2.length == 0)
+    {
+        enum staticEqual = T1.length == T2.length;
+    }
+    else
+    {
+        static if(is(T1[0]) && is(T2[0]))
+        {
+            enum staticEqual = is(T1[0] == T2[0]) && 
+                staticEqual!(StrictTuple!(T1[1 .. $]), StrictTuple!(T2[1 .. $]));
+        } else static if(!is(T1[0]) && !is(T2[0]))
+        {
+            enum staticEqual = T1[0] == T2[0] &&  
+                staticEqual!(StrictTuple!(T1[1 .. $]), StrictTuple!(T2[1 .. $]));
+        } else
+        {
+            enum staticEqual = false;
+        }
+    }
+}
+/// Example
+unittest
+{
+    static assert(staticEqual!(StrictTuple!(1, 2, 3), StrictTuple!(1, 2, 3)));
+    static assert(staticEqual!(StrictTuple!(int, float, 3), StrictTuple!(int, float, 3)));
+    static assert(!staticEqual!(StrictTuple!(int, float, 4), StrictTuple!(int, float, 3)));
+    static assert(!staticEqual!(StrictTuple!(void, float, 4), StrictTuple!(int, float, 4)));
+    static assert(!staticEqual!(StrictTuple!(1, 2, 3), StrictTuple!(1, void, 3)));
+    static assert(!staticEqual!(StrictTuple!(float), StrictTuple!()));
+    static assert(staticEqual!(StrictTuple!(), StrictTuple!()));
+}
+
+/**
+*   Variant of std.traits.hasMember that checks also by member type
+*   to handle overloads.
+*   
+*   $(B T) is atype to be checked. $(B ElemType) is a member type, and 
+*   $(B ElemName) is a member name. Template returns $(B true) if $(B T) has
+*   element (field or method) of type $(B ElemType) with name $(B ElemName).
+*
+*   Template returns $(B false) for non aggregates.
+*/
+template hasOverload(T, ElemType, string ElemName)
+{
+    static if(is(T == class) || is(T == struct) || is(T == interface) || is(T == union))
+    {
+        static if(isCallable!ElemType)
+        {
+            alias retType = ReturnType!ElemType;
+            alias paramTuple = ParameterTypeTuple!ElemType;
+            
+            private template extractType(alias F)
+            {
+                alias extractType = typeof(F);
+            }
+            
+            static if(hasMember!(T, ElemName))
+                alias overloads = staticMap!(extractType, __traits(getOverloads, T, ElemName));
+            else
+                alias overloads = Tuple!();
+            
+            /// TODO: at next realease check overloads by attributes
+            //pragma(msg, __traits(getFunctionAttributes, sum));
+            
+            private template checkType(F)
+            {
+                static if(is(ReturnType!F == retType))
+                {
+                    enum checkType = staticEqual!(StrictTuple!(ParameterTypeTuple!F), StrictTuple!(paramTuple));
+                } else
+                {
+                    enum checkType = false;
+                }
+            }
+            
+            enum hasOverload = anySatisfy!(checkType, overloads);
+        }
+        else
+        {
+            enum hasOverload = staticIndexOf!(ElemName, __traits(allMembers, T)) != -1;
+        }
+    }
+    else
+    {
+        enum hasOverload = false;
+    }
+}
+/// Example
+unittest
+{
+    struct A
+    {
+        bool method1(string a);
+        bool method1(float b);
+        string method1();
+        
+        string field;
+    }
+    
+    static assert(hasOverload!(A, bool function(string), "method1"));
+    static assert(hasOverload!(A, bool function(float), "method1"));
+    static assert(hasOverload!(A, string function(), "method1"));
+    static assert(hasOverload!(A, string, "field"));
+    
+    static assert(!hasOverload!(A, void function(), "method1"));
+    static assert(!hasOverload!(A, bool function(), "method1"));
+    static assert(!hasOverload!(A, string function(float), "method1"));
+    
+    /// TODO: at next realease check overloads by attributes
+//    struct D
+//    {
+//        string toString() const {return "";}
+//    }
+//    
+//    static assert(hasOverload!(D, const string function(), "toString"));
+//    static assert(!hasOverload!(D, string function(), "toString"));
+}
+
+/**
+*   More useful version of allMembers trait, that returns only
+*   fields and methods of class/struct/interface/union without
+*   service members like constructors and Object members.
+*
+*   Note: if Object methods are explicitly override in $(B T) 
+*   (not other base class), then the methods are included into
+*   the result.
+*/
+template fieldsAndMethods(T)  
+{
+    static if(is(T == class) || is(T == struct) || is(T == interface) || is(T == union))
+    {
+        /// Getting all inherited members from Object exluding overrided
+        private template derivedFromObject()
+        {
+            alias objectMembers = Tuple!(__traits(allMembers, Object));
+            alias derivedMembers = Tuple!(__traits(derivedMembers, T));
+            
+            private template removeDerived(string name)
+            {
+                enum removeDerived = staticIndexOf!(name, derivedMembers);
+            }
+            
+            alias derivedFromObject = Filter!(removeDerived, objectMembers);
+        }
+        
+        /// Filter unrelated symbols like constructors and Object methods
+        private template filterUtil(string name)
+        {
+            static if(name == "this")
+            {
+                enum filterUtil = false;
+            } 
+            else
+            {
+                static if(is(T == class))
+                {
+                    enum filterUtil = staticIndexOf!(name, derivedFromObject!()) == -1;
+                }
+                else
+                {
+                    enum filterUtil = true;
+                }
+            }
+        }
+        
+        alias fieldsAndMethods = Filter!(filterUtil, __traits(allMembers, T));
+    }
+    else
+    {
+        alias fieldsAndMethods = Tuple!();
+    }
+}
+/// Example
+unittest
+{
+    struct A
+    {
+        string a;
+        float b;
+        void foo();
+        string bar(float);
+    }
+    
+    class B
+    {
+        string a;
+        float b;
+        void foo() {}
+        string bar(float) {return "";}
+    }
+    
+    class C
+    {
+        override string toString() const {return "";}
+    }
+    
+    static assert(staticEqual!(StrictTuple!(fieldsAndMethods!A), StrictTuple!("a", "b", "foo", "bar"))); 
+    static assert(staticEqual!(StrictTuple!(fieldsAndMethods!B), StrictTuple!("a", "b", "foo", "bar"))); 
+    static assert(staticEqual!(StrictTuple!(fieldsAndMethods!C), StrictTuple!("toString"))); 
 }

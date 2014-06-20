@@ -41,23 +41,19 @@ template isExpose(Type, Interfaces...)
         alias getMembers = Tuple!(__traits(allMembers, T));
     }
     
-    private template bindType(Base, TS...)
-    {
-        enum T = TS[0];
-        alias bindType = Tuple!(typeof(mixin(Base.stringof ~ "." ~ T)), T);
-    }
-    
-    template isExposeSingle(Interface)
+    private template isExposeSingle(Interface)
     {
         alias intMembers = StrictTuple!(getMembers!Interface); 
         alias intTypes = StrictTuple!(staticReplicate!(Interface, intMembers.expand!().length));
         alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers));
                 
-        template checkMember(TS...)
+        private template bindType(Base, string T)
         {
-            alias MemberType = TS[0];
-            enum MemberName = TS[1];
-            
+            alias bindType = Tuple!(typeof(mixin(Base.stringof ~ "." ~ T)), T);
+        }
+        
+        template checkMember(MemberType, string MemberName)
+        {
             static if(hasMember!(Type, MemberName))
             {
                 enum checkMember = is(typeof(mixin(Type.stringof ~ "." ~ MemberName)) == MemberType);

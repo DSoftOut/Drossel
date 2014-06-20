@@ -216,10 +216,8 @@ template staticRobin(SF...)
     
     enum minLength = staticFold!(minimum, size_t.max, SF);
     
-    private template robin(NS...)
-    {
-        enum i = NS[0];
-        
+    private template robin(ulong i)
+    {        
         private template takeByIndex(alias T)
         {
             static if(is(T.expand!()[i]))

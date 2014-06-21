@@ -46,9 +46,9 @@ template isExpose(Type, Interfaces...)
     
     private template isExposeSingle(Interface)
     {
-        alias intMembers = StrictList!(fieldsAndMethods!Interface); 
-        alias intTypes = StrictList!(staticReplicate!(Interface, intMembers.expand.length));
-        alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers));
+        alias intMembers = StrictList!(fieldsAndMethods!Interface); //pragma(msg, intMembers.expand);
+        alias intTypes = StrictList!(staticReplicate!(Interface, intMembers.expand.length)); 
+        alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers)); 
     
         private template bindType(Base, string T) // also expanding overloads
         {
@@ -57,21 +57,24 @@ template isExpose(Type, Interfaces...)
                 alias getType = typeof(T);
             }
             
-            alias overloads = staticMap!(getType , List!(__traits(getOverloads, Base, T))); 
+            alias overloads_ = staticMap!(getType , List!(__traits(getOverloads, Base, T)));
+            static if(overloads_.length == 0)
+                alias overloads = List!(typeof(__traits(getMember, Base, T)));
+            else
+                alias overloads = overloads_;
+                            
             alias names = staticReplicate!(T, overloads.length);
             alias bindType = staticRobin!(StrictList!overloads, StrictList!names);
         }
         
         template checkMember(MemberType, string MemberName)
         {
-            private template Identity(alias A) { alias A Identity; }
-            
             static if(hasMember!(Type, MemberName))
-            {
-                enum checkMember = hasOverload!(Type, MemberType, MemberName);
+            { 
+                enum checkMember = hasOverload!(Type, Unqual!MemberType, MemberName);
             }
             else
-            {
+            { 
                 enum checkMember = false;
             }
         }
@@ -126,4 +129,18 @@ version(unittest)
     }
     
     static assert(!isExpose!(Test2, CITest4));
+    
+    struct CITest5
+    {
+        immutable string const1;
+        immutable bool const2;
+    }
+    
+    struct Test3
+    {
+        enum const1 = "";
+        enum const2 = true;
+    }
+    
+    static assert(isExpose!(Test3, CITest5));
 }

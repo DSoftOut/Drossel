@@ -344,7 +344,8 @@ template hasOverload(T, ElemType, string ElemName)
         }
         else
         {
-            enum hasOverload = staticIndexOf!(ElemName, __traits(allMembers, T)) != -1;
+            enum hasOverload = staticIndexOf!(ElemName, __traits(allMembers, T)) != -1 &&
+                is(typeof(__traits(getMember, T, ElemName)) == ElemType);
         }
     }
     else
@@ -369,6 +370,7 @@ unittest
     static assert(hasOverload!(A, string function(), "method1"));
     static assert(hasOverload!(A, string, "field"));
     
+    static assert(!hasOverload!(A, bool, "field"));
     static assert(!hasOverload!(A, void function(), "method1"));
     static assert(!hasOverload!(A, bool function(), "method1"));
     static assert(!hasOverload!(A, string function(float), "method1"));

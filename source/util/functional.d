@@ -20,7 +20,7 @@
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
 *
-*   More powerful templates for meta-programming than std.typetuple provides.
+*   More powerful templates for meta-programming than std.typeList provides.
 */
 module util.functional;
 
@@ -28,47 +28,44 @@ import std.typetuple;
 import std.traits;
 
 /**
-*   Simple expression tuple wrapper.
+*   Simple expression list wrapper.
 *
-*   See_Also: Expression tuple at dlang.org documentation.
+*   See_Also: Expression list at dlang.org documentation.
 */
-template Tuple(T...)
+template List(T...)
 {
-    alias Tuple = T;
+    alias List = T;
 }
 /// Example
 unittest
 {
-    static assert([Tuple!(1, 2, 3)] == [1, 2, 3]);
+    static assert([List!(1, 2, 3)] == [1, 2, 3]);
 }
 
 /**
-*   Sometimes we don't want to auto expand expression tuples.
-*   That can be used to pass several tuples into templates without
+*   Sometimes we don't want to auto expand expression Lists.
+*   That can be used to pass several lists into templates without
 *   breaking their boundaries.
 */
-template StrictTuple(T...)
+template StrictList(T...)
 {
-    template expand()
-    {
-        alias expand = T;
-    }
+    alias expand = T;
 }
 /// Example
 unittest
 {
     template Test(alias T1, alias T2)
     {
-        static assert([T1.expand!()] == [1, 2]);
-        static assert([T2.expand!()] == [3, 4]);
+        static assert([T1.expand] == [1, 2]);
+        static assert([T2.expand] == [3, 4]);
         enum Test = true;
     }
     
-    static assert(Test!(StrictTuple!(1, 2), StrictTuple!(3, 4)));
+    static assert(Test!(StrictList!(1, 2), StrictList!(3, 4)));
 }
 
 /**
-*   Same as std.typetuple.staticMap, but passes two arguments to the first template.
+*   Same as std.typeList.staticMap, but passes two arguments to the first template.
 */
 template staticMap2(alias F, T...)
 {
@@ -76,15 +73,15 @@ template staticMap2(alias F, T...)
     
     static if (T.length < 2)
     {
-        alias staticMap2 = Tuple!();
+        alias staticMap2 = List!();
     }
     else static if (T.length == 2)
     {
-        alias staticMap2 = Tuple!(F!(T[0], T[1]));
+        alias staticMap2 = List!(F!(T[0], T[1]));
     }
     else
     {
-        alias staticMap2 = Tuple!(F!(T[0], T[1]), staticMap2!(F, T[2  .. $]));
+        alias staticMap2 = List!(F!(T[0], T[1]), staticMap2!(F, T[2  .. $]));
     }
 }
 /// Example
@@ -99,7 +96,7 @@ unittest
 }
 
 /**
-*   Same as std.typetuple.allSatisfy, but passes 2 arguments to the first template.
+*   Same as std.typeList.allSatisfy, but passes 2 arguments to the first template.
 */
 template allSatisfy2(alias F, T...)
 {
@@ -143,11 +140,11 @@ template staticReplicate(TS...)
     
     static if(n > 0)
     {
-        alias staticReplicate = Tuple!(T, staticReplicate!(T, n-1));
+        alias staticReplicate = List!(T, staticReplicate!(T, n-1));
     }
     else
     {
-        alias staticReplicate = Tuple!();
+        alias staticReplicate = List!();
     }
 } 
 /// Example
@@ -172,7 +169,7 @@ template staticFold(alias F, T...)
 {
     static if(T.length == 0) // invalid input
     {
-        alias staticFold = Tuple!(); 
+        alias staticFold = List!(); 
     }
     else static if(T.length == 1)
     {
@@ -209,19 +206,19 @@ unittest
 }
 
 /**
-*   Compile-time variant of std.range.robin for expression tuples.
+*   Compile-time variant of std.range.robin for expression Lists.
 *   
-*   Template expects $(B StrictTuple) list as paramater and returns
-*   new expression tuple where first element is from first expression tuple,
-*   second element is from second tuple and so on, until one of input tuples
+*   Template expects $(B StrictList) list as paramater and returns
+*   new expression list where first element is from first expression List,
+*   second element is from second List and so on, until one of input Lists
 *   doesn't end.
 */
 template staticRobin(SF...)
 {
-    // Calculating minimum length of all tuples
+    // Calculating minimum length of all Lists
     private template minimum(T...)
     {
-        enum length = T[1].expand!().length;
+        enum length = T[1].expand.length;
         enum minimum = T[0] > length ? length : T[0];
     }
     
@@ -231,19 +228,19 @@ template staticRobin(SF...)
     {        
         private template takeByIndex(alias T)
         {
-            static if(is(T.expand!()[i]))
-                alias takeByIndex = T.expand!()[i];
+            static if(is(T.expand[i]))
+                alias takeByIndex = T.expand[i];
             else
-                enum takeByIndex = T.expand!()[i];
+                enum takeByIndex = T.expand[i];
         }
         
         static if(i >= minLength)
         {
-            alias robin = Tuple!();
+            alias robin = List!();
         }
         else
         {
-            alias robin = Tuple!(staticMap!(takeByIndex, SF), robin!(i+1));
+            alias robin = List!(staticMap!(takeByIndex, SF), robin!(i+1));
         }
     }
     
@@ -252,21 +249,21 @@ template staticRobin(SF...)
 /// Example
 unittest
 {
-    alias test = staticRobin!(StrictTuple!(int, int, int), StrictTuple!(float, float));
-    static assert(is(test == Tuple!(int, float, int, float)));
+    alias test = staticRobin!(StrictList!(int, int, int), StrictList!(float, float));
+    static assert(is(test == List!(int, float, int, float)));
     
-    alias test2 = staticRobin!(StrictTuple!(1, 2), StrictTuple!(3, 4, 5), StrictTuple!(6, 7));
+    alias test2 = staticRobin!(StrictList!(1, 2), StrictList!(3, 4, 5), StrictList!(6, 7));
     static assert([test2]== [1, 3, 6, 2, 4, 7]);
 }
 
 /**
-*   Checks two expression tuples to be equal. 
-*   $(B ET1) and $(B ET2) should be wrapped to $(B StrictTuple).
+*   Checks two expression lists to be equal. 
+*   $(B ET1) and $(B ET2) should be wrapped to $(B StrictList).
 */
 template staticEqual(alias ET1, alias ET2)
 {
-    alias T1 = ET1.expand!();
-    alias T2 = ET2.expand!();
+    alias T1 = ET1.expand;
+    alias T2 = ET2.expand;
     
     static if(T1.length == 0 || T2.length == 0)
     {
@@ -277,11 +274,11 @@ template staticEqual(alias ET1, alias ET2)
         static if(is(T1[0]) && is(T2[0]))
         {
             enum staticEqual = is(T1[0] == T2[0]) && 
-                staticEqual!(StrictTuple!(T1[1 .. $]), StrictTuple!(T2[1 .. $]));
+                staticEqual!(StrictList!(T1[1 .. $]), StrictList!(T2[1 .. $]));
         } else static if(!is(T1[0]) && !is(T2[0]))
         {
             enum staticEqual = T1[0] == T2[0] &&  
-                staticEqual!(StrictTuple!(T1[1 .. $]), StrictTuple!(T2[1 .. $]));
+                staticEqual!(StrictList!(T1[1 .. $]), StrictList!(T2[1 .. $]));
         } else
         {
             enum staticEqual = false;
@@ -291,20 +288,20 @@ template staticEqual(alias ET1, alias ET2)
 /// Example
 unittest
 {
-    static assert(staticEqual!(StrictTuple!(1, 2, 3), StrictTuple!(1, 2, 3)));
-    static assert(staticEqual!(StrictTuple!(int, float, 3), StrictTuple!(int, float, 3)));
-    static assert(!staticEqual!(StrictTuple!(int, float, 4), StrictTuple!(int, float, 3)));
-    static assert(!staticEqual!(StrictTuple!(void, float, 4), StrictTuple!(int, float, 4)));
-    static assert(!staticEqual!(StrictTuple!(1, 2, 3), StrictTuple!(1, void, 3)));
-    static assert(!staticEqual!(StrictTuple!(float), StrictTuple!()));
-    static assert(staticEqual!(StrictTuple!(), StrictTuple!()));
+    static assert(staticEqual!(StrictList!(1, 2, 3), StrictList!(1, 2, 3)));
+    static assert(staticEqual!(StrictList!(int, float, 3), StrictList!(int, float, 3)));
+    static assert(!staticEqual!(StrictList!(int, float, 4), StrictList!(int, float, 3)));
+    static assert(!staticEqual!(StrictList!(void, float, 4), StrictList!(int, float, 4)));
+    static assert(!staticEqual!(StrictList!(1, 2, 3), StrictList!(1, void, 3)));
+    static assert(!staticEqual!(StrictList!(float), StrictList!()));
+    static assert(staticEqual!(StrictList!(), StrictList!()));
 }
 
 /**
 *   Variant of std.traits.hasMember that checks also by member type
 *   to handle overloads.
 *   
-*   $(B T) is atype to be checked. $(B ElemType) is a member type, and 
+*   $(B T) is a type to be checked. $(B ElemType) is a member type, and 
 *   $(B ElemName) is a member name. Template returns $(B true) if $(B T) has
 *   element (field or method) of type $(B ElemType) with name $(B ElemName).
 *
@@ -317,7 +314,7 @@ template hasOverload(T, ElemType, string ElemName)
         static if(isCallable!ElemType)
         {
             alias retType = ReturnType!ElemType;
-            alias paramTuple = ParameterTypeTuple!ElemType;
+            alias paramList = ParameterTypeTuple!ElemType;
             
             private template extractType(alias F)
             {
@@ -327,7 +324,7 @@ template hasOverload(T, ElemType, string ElemName)
             static if(hasMember!(T, ElemName))
                 alias overloads = staticMap!(extractType, __traits(getOverloads, T, ElemName));
             else
-                alias overloads = Tuple!();
+                alias overloads = List!();
             
             /// TODO: at next realease check overloads by attributes
             //pragma(msg, __traits(getFunctionAttributes, sum));
@@ -336,7 +333,7 @@ template hasOverload(T, ElemType, string ElemName)
             {
                 static if(is(ReturnType!F == retType))
                 {
-                    enum checkType = staticEqual!(StrictTuple!(ParameterTypeTuple!F), StrictTuple!(paramTuple));
+                    enum checkType = staticEqual!(StrictList!(ParameterTypeTuple!F), StrictList!(paramList));
                 } else
                 {
                     enum checkType = false;
@@ -402,8 +399,8 @@ template fieldsAndMethods(T)
         /// Getting all inherited members from Object exluding overrided
         private template derivedFromObject()
         {
-            alias objectMembers = Tuple!(__traits(allMembers, Object));
-            alias derivedMembers = Tuple!(__traits(derivedMembers, T));
+            alias objectMembers = List!(__traits(allMembers, Object));
+            alias derivedMembers = List!(__traits(derivedMembers, T));
             
             private template removeDerived(string name)
             {
@@ -437,7 +434,7 @@ template fieldsAndMethods(T)
     }
     else
     {
-        alias fieldsAndMethods = Tuple!();
+        alias fieldsAndMethods = List!();
     }
 }
 /// Example
@@ -464,7 +461,7 @@ unittest
         override string toString() const {return "";}
     }
     
-    static assert(staticEqual!(StrictTuple!(fieldsAndMethods!A), StrictTuple!("a", "b", "foo", "bar"))); 
-    static assert(staticEqual!(StrictTuple!(fieldsAndMethods!B), StrictTuple!("a", "b", "foo", "bar"))); 
-    static assert(staticEqual!(StrictTuple!(fieldsAndMethods!C), StrictTuple!("toString"))); 
+    static assert(staticEqual!(StrictList!(fieldsAndMethods!A), StrictList!("a", "b", "foo", "bar"))); 
+    static assert(staticEqual!(StrictList!(fieldsAndMethods!B), StrictList!("a", "b", "foo", "bar"))); 
+    static assert(staticEqual!(StrictList!(fieldsAndMethods!C), StrictList!("toString"))); 
 }

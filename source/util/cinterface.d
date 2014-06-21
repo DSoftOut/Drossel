@@ -41,13 +41,13 @@ template isExpose(Type, Interfaces...)
 {
     private template getMembers(T)
     {
-        alias getMembers = Tuple!(__traits(allMembers, T));
+        alias getMembers = List!(__traits(allMembers, T));
     }
     
     private template isExposeSingle(Interface)
     {
-        alias intMembers = StrictTuple!(fieldsAndMethods!Interface); 
-        alias intTypes = StrictTuple!(staticReplicate!(Interface, intMembers.expand!().length));
+        alias intMembers = StrictList!(fieldsAndMethods!Interface); 
+        alias intTypes = StrictList!(staticReplicate!(Interface, intMembers.expand.length));
         alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers));
     
         private template bindType(Base, string T) // also expanding overloads
@@ -57,9 +57,9 @@ template isExpose(Type, Interfaces...)
                 alias getType = typeof(T);
             }
             
-            alias overloads = staticMap!(getType , Tuple!(__traits(getOverloads, Base, T))); 
+            alias overloads = staticMap!(getType , List!(__traits(getOverloads, Base, T))); 
             alias names = staticReplicate!(T, overloads.length);
-            alias bindType = staticRobin!(StrictTuple!overloads, StrictTuple!names);
+            alias bindType = staticRobin!(StrictList!overloads, StrictList!names);
         }
         
         template checkMember(MemberType, string MemberName)

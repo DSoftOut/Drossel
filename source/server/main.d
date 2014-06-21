@@ -24,6 +24,14 @@
 */
 module server.main;
 
+import server.settings;
+import util.log;
+
+shared static this()
+{
+    initGlobalLogger!(Settings.loggerName);
+} 
+
 int main(string[] args)
 {
     return 0;

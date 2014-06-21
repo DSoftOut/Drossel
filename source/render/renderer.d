@@ -31,4 +31,7 @@ struct CIRenderer
     immutable string name;
     /// Detail description of the renderer
     immutable string description;
+    
+    /// Initialization method, could varies within implementation
+    void initialize(T...)(T args); 
 }

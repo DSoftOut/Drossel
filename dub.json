@@ -5,6 +5,7 @@
 	"license": "GPL-3.0",
 	"authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>"],
 	"dependencies" : {
+	   "dlogg": "~master"
 	},
 	"configurations": [
 	   {

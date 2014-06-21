@@ -26,10 +26,17 @@ module client.main;
 
 import render.polygonal;
 import render.glfw3opengl3;
+import client.settings;
+import util.log;
 import std.stdio;
 
 alias Renderer = PolygonalRenderer!GLFW3OpenGL3Driver;
  
+shared static this()
+{
+    initGlobalLogger!(Settings.loggerName);
+} 
+
 int main(string[] args)
 {
     auto renderer = new Renderer();

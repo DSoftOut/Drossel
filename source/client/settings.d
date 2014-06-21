@@ -19,46 +19,14 @@
 *   Copyright: © 2014 Anton Gushcha
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
+*
+*   Compile-time client settings.
 */
-module render.polygonal;
+module client.settings;
 
-import render.renderer;
-import render.driver;
-import util.cinterface;
-import util.log;
-import std.conv;
-
-class PolygonalRenderer(Driver)
-    if(isExpose!(Driver, CIDriver))
+/// Holds client compile-time settings
+struct Settings
 {
-    static assert(isExpose!(typeof(this), CIRenderer), "Implementation error!");
-    mixin Logging;
-    
-    /// Name of renderer, should include underlying driver
-    enum name = "Polygonal renderer";
-    
-    /// Detail description of the renderer
-    enum description = text("Rendering via polygons rasterizer. Driver: ", driver.name, ".");
-    
-    this()
-    {
-        driver = new Driver();
-        initialize();
-    }
-    
-    override destroy()
-    {
-        driver.destroy();
-        super.destroy();
-    }
-    
-    void initialize()()
-    {
-        logInfo("Renderer initialized!");
-    }
-    
-    private
-    {
-        Driver driver;
-    }
+    /// Global logger name
+    enum loggerName = "drossy-stars-client.log";
 }

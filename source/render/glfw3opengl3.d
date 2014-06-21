@@ -19,24 +19,20 @@
 *   Copyright: © 2014 Anton Gushcha
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
-*
-*   Entry point for client configuration. Main thread is handled by rendering subsystem.
 */
-module client.main;
+module render.glfw3opengl3;
 
-import render.polygonal;
-import render.glfw3opengl3;
-import std.stdio;
+import render.driver;
+import util.cinterface;
 
-alias Renderer = PolygonalRenderer!GLFW3OpenGL3Driver;
- 
-int main(string[] args)
+class GLFW3OpenGL3Driver
 {
-    auto renderer = new Renderer();
-    scope(exit) renderer.destroy();
+    static assert(isExpose!(typeof(this), CIDriver), "Implementation error!");
     
-    writeln(renderer.name);
-    writeln(renderer.description);
+    /// Driver name
+    enum name = "OpenGL 3.0 driver with GLFW3 context";
     
-    return 0;
+    /// Detail description
+    enum description = "The driver supports minimum OpenGL 3.0 version. Windows and context creation are "
+            "handled via GLFW3 library.";
 }

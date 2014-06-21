@@ -1,6 +1,6 @@
 *.class
 
-# Package Files #
+# StrictListage Files #
 *.jar
 *.war
 *.ear

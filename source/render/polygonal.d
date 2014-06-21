@@ -19,24 +19,38 @@
 *   Copyright: © 2014 Anton Gushcha
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
-*
-*   Entry point for client configuration. Main thread is handled by rendering subsystem.
 */
-module client.main;
+module render.polygonal;
 
-import render.polygonal;
-import render.glfw3opengl3;
-import std.stdio;
+import render.renderer;
+import render.driver;
+import util.cinterface;
+import std.conv;
 
-alias Renderer = PolygonalRenderer!GLFW3OpenGL3Driver;
- 
-int main(string[] args)
+class PolygonalRenderer(Driver)
+    if(isExpose!(Driver, CIDriver))
 {
-    auto renderer = new Renderer();
-    scope(exit) renderer.destroy();
+    static assert(isExpose!(typeof(this), CIRenderer), "Implementation error!");
     
-    writeln(renderer.name);
-    writeln(renderer.description);
+    /// Name of renderer, should include underlying driver
+    enum name = "Polygonal renderer";
     
-    return 0;
+    /// Detail description of the renderer
+    enum description = text("Rendering via polygons rasterizer. Driver: ", driver.name, ".");
+    
+    this()
+    {
+        driver = new Driver();
+    }
+    
+    override destroy()
+    {
+        driver.destroy();
+        super.destroy();
+    }
+    
+    private
+    {
+        Driver driver;
+    }
 }

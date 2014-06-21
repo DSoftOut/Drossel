@@ -19,24 +19,16 @@
 *   Copyright: © 2014 Anton Gushcha
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
-*
-*   Entry point for client configuration. Main thread is handled by rendering subsystem.
 */
-module client.main;
+module render.driver;
 
-import render.polygonal;
-import render.glfw3opengl3;
-import std.stdio;
-
-alias Renderer = PolygonalRenderer!GLFW3OpenGL3Driver;
- 
-int main(string[] args)
+/**
+*   Compile time interface
+*/
+struct CIDriver
 {
-    auto renderer = new Renderer();
-    scope(exit) renderer.destroy();
-    
-    writeln(renderer.name);
-    writeln(renderer.description);
-    
-    return 0;
+    /// Driver name
+    immutable string name;
+    /// Detail description
+    immutable string description;
 }

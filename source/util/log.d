@@ -95,6 +95,22 @@ shared static ~this()
 }
 
 /**
+*   LoggedError is wrapper that is thrown by $(B raiseLogged).
+*/
+class LoggedError : Error
+{
+    @safe pure nothrow this(string msg, Throwable next = null)
+    {
+        super(msg, next);
+    }
+
+    @safe pure nothrow this(string msg, string file, size_t line, Throwable next = null)
+    {
+        super(msg, file, line, next);
+    }
+}
+
+/**
 *   Mixin this to inject logging support to your class/struct.
 *
 *   $(B type) parameter chooses between global logger for whole
@@ -139,12 +155,19 @@ mixin template Logging(LoggerType type = LoggerType.Global)
         
         private void logError(T...)(T msgs)
         {
-            _logger.log(text(msgs), LoggingLevel.Error);
+            _logger.log(text(msgs), LoggingLevel.Fatal);
         }
         
         private void logWarning(T...)(T msgs)
         {
             _logger.log(text(msgs), LoggingLevel.Warning);
+        }
+        
+        private LoggedError raiseLogged(T...)(T msgs)
+        {
+            string msg = text(msgs);
+            _logger.log(msg, LoggingLevel.Fatal);
+            return new LoggedError(msg);
         }
     }
     else
@@ -166,12 +189,19 @@ mixin template Logging(LoggerType type = LoggerType.Global)
         
         private void logError(T...)(T msgs)
         {
-            globalLogger.log(text(msgs), LoggingLevel.Error);
+            globalLogger.log(text(msgs), LoggingLevel.Fatal);
         }
         
         private void logWarning(T...)(T msgs)
         {
             globalLogger.log(text(msgs), LoggingLevel.Warning);
+        }
+        
+        private LoggedError raiseLogged(T...)(T msgs)
+        {
+            string msg = text(msgs);
+            globalLogger.log(msg, LoggingLevel.Fatal);
+            return new LoggedError(msg);
         }
     }
 } 

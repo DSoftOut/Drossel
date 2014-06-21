@@ -48,13 +48,22 @@ class PolygonalRenderer(Driver)
     
     override destroy()
     {
-        driver.destroy();
+        logInfo(name, " shutdown...");
+        {
+            scope(success) logInfo(name, " shutdown is finished...");
+            driver.destroy();
+        }
         super.destroy();
     }
     
     void initialize()()
     {
-        logInfo("Renderer initialized!");
+        logInfo(name, " initializing...");
+        scope(success) 
+        {
+            logInfo(name, " initalization is finished!");
+            logInfo(description);
+        }
     }
     
     private

@@ -42,8 +42,5 @@ int main(string[] args)
     auto renderer = new Renderer();
     scope(exit) renderer.destroy();
     
-    writeln(renderer.name);
-    writeln(renderer.description);
-    
     return 0;
 }

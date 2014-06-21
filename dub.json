@@ -5,7 +5,9 @@
 	"license": "GPL-3.0",
 	"authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>"],
 	"dependencies" : {
-	   "dlogg": "~master"
+	   "dlogg": "~master",
+	   "derelict-glfw3": "~master",
+       "derelict-gl3": "~master"
 	},
 	"configurations": [
 	   {

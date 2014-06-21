@@ -31,4 +31,7 @@ struct CIDriver
     immutable string name;
     /// Detail description
     immutable string description;
+    
+    /// initialization could varies within implementation
+    void initialize(T...)(T args);
 }

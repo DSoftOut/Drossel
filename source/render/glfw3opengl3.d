@@ -24,10 +24,16 @@ module render.glfw3opengl3;
 
 import render.driver;
 import util.cinterface;
+import util.log;
+import std.exception;
+
+import derelict.opengl3.gl3;
+import derelict.glfw3.glfw3;
 
 class GLFW3OpenGL3Driver
 {
     static assert(isExpose!(typeof(this), CIDriver), "Implementation error!");
+    mixin Logging;
     
     /// Driver name
     enum name = "OpenGL 3.0 driver with GLFW3 context";
@@ -35,4 +41,56 @@ class GLFW3OpenGL3Driver
     /// Detail description
     enum description = "The driver supports minimum OpenGL 3.0 version. Windows and context creation are "
             "handled via GLFW3 library.";
+            
+    this()
+    {
+        initialize();
+    }
+    
+    override destroy()
+    {
+        logInfo(name, " shutdown...");
+        {
+            scope(success)
+            {
+                logInfo(name, " shutdown is finished!");
+            }
+        }
+        glfwTerminate();
+        super.destroy();
+    }
+    
+    void initialize()()
+    {
+        logInfo("Initializing driver...");
+        scope(success) logInfo("Driver initialization is finished!");
+        
+        initOpenGL();
+        initGLFW3();
+        initOpenGL3();
+    }
+    
+    private void initOpenGL()
+    {
+        logInfo("Initializing base OpenGL...");
+        scope(success) logInfo("Base OpenGL initialization is finished!");
+        
+        DerelictGL3.load();
+    }
+    
+    private void initGLFW3()
+    {
+        logInfo("Initializing GLFW3...");
+        scope(success) logInfo("GLFW3 initialization is finished!");
+        
+        DerelictGLFW3.load();
+        
+        enforce(glfwInit(), raiseLogged("Failed to initialize GLFW3!"));
+    }
+    
+    private void initOpenGL3()
+    {
+        logInfo("Initializing OpenGL3 ...");
+        scope(success) logInfo("OpenGL3 initialization is finished!");
+    }
 }

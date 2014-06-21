@@ -122,7 +122,7 @@ is widely used among developers working in that language.
 
   The "System Libraries" of an executable work include anything, other
 than the work as a whole, that (a) is included in the normal form of
-packaging a Major Component, but which is not part of that Major
+StrictListaging a Major Component, but which is not part of that Major
 Component, and (b) serves only to enable use of the work with that
 Major Component, or to implement a Standard Interface for which an
 implementation is available to the public in source code form.  A
@@ -223,7 +223,7 @@ terms of section 4, provided that you also meet all of these conditions:
     License to anyone who comes into possession of a copy.  This
     License will therefore apply, along with any applicable section 7
     additional terms, to the whole of the work, and all its parts,
-    regardless of how they are packaged.  This License gives no
+    regardless of how they are StrictListaged.  This License gives no
     permission to license the work in any other way, but it does not
     invalidate such permission if you have separately received it.
 
@@ -338,7 +338,7 @@ protocols for communication across the network.
 in accord with this section must be in a format that is publicly
 documented (and with an implementation available to the public in
 source code form), and must require no special password or key for
-unpacking, reading or copying.
+unStrictListing, reading or copying.
 
   7. Additional Terms.
 

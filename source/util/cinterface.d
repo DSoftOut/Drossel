@@ -26,6 +26,9 @@ import std.typetuple;
 import std.traits;
 import util.functional;
 
+/// UDA if you don't want to match element in interface
+enum trasient;
+
 /**
 *   Checks $(B Type) to satisfy compile-time interfaces listed in $(B Interfaces). 
 *
@@ -46,10 +49,16 @@ template isExpose(Type, Interfaces...)
     
     private template isExposeSingle(Interface)
     {
-        alias intMembers = StrictList!(fieldsAndMethods!Interface); //pragma(msg, intMembers.expand);
+        alias intMembers = StrictList!(Filter!(filterTrasient, fieldsAndMethods!Interface));
         alias intTypes = StrictList!(staticReplicate!(Interface, intMembers.expand.length)); 
         alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers)); 
     
+        private template filterTrasient(string name)
+        {
+            enum filterTrasient 
+                = staticIndexOf!(trasient, __traits(getAttributes, __traits(getMember, Interface, name))) == -1;
+        }
+        
         private template bindType(Base, string T) // also expanding overloads
         {
             private template getType(alias T)

@@ -3,7 +3,7 @@
 	"copyright": "© 2014 Anton Gushcha",
 	"description" : "Sandbox minecraft like multiplayer game, where you survive in single solar system with other players, build industry, space ship, space stations and fight!",
 	"license": "GPL-3.0",
-	"authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>],
+	"authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>"],
 	"dependencies" : {
 	},
 	"configurations": [

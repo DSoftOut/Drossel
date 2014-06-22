@@ -22,6 +22,10 @@
 */
 module render.renderer;
 
+import render.driver;
+import util.cinterface;
+import std.traits;
+
 /**
 *   Compile-time interface describing rendering subsystem.
 */
@@ -33,5 +37,25 @@ struct CIRenderer
     immutable string description;
     
     /// Initialization method, could varies within implementation
-    void initialize(T...)(T args); 
+    void initialize(T...)(T args);
+    
+    /// Get driver of the renderer
+    @trasient
+    Driver driver()() if(isDriver!Driver); 
+}
+
+/// Test if $(B T) is actual renderer
+template isRenderer(T)
+{
+    static if(hasMember!(T, "driver"))
+    {
+        alias R = ReturnType!(__traits(getMember, T, "driver"));
+        
+        enum hasDriver = isDriver!R;
+    } else
+    {
+        enum hasDriver = false;
+    }
+    
+    enum isRenderer = isExpose!(T, CIRenderer) && hasDriver;
 }

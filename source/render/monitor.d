@@ -19,39 +19,44 @@
 *   Copyright: © 2014 Anton Gushcha
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
-*
-*   Entry point for client configuration. Main thread is handled by rendering subsystem.
 */
-module client.main;
+module render.monitor;
 
-import render.polygonal;
-import render.glfw3.opengl3;
-import client.settings;
-import util.log;
-import std.stdio;
+import render.mode;
+import util.cinterface;
+import util.vec;
+import std.range;
+import std.traits;
 
-alias Renderer = PolygonalRenderer!GLFW3OpenGL3Driver;
- 
-shared static this()
+struct CIMonitor
 {
-    initGlobalLogger!(Settings.loggerName);
-} 
-
-int main(string[] args)
-{
-    auto renderer = new Renderer();
-    scope(exit) renderer.destroy();
+    /// Monitor position on virtual surface
+    vec2!uint position() const;
+    /// Monitor physical size in pixels
+    vec2!uint size() const;
+    /// Monitor system name
+    string name() const;
     
-    writeln("Printing monitors:");
-    size_t i;
-    foreach(monitor; renderer.driver.monitors)
+    /// Returns available video modes
+    @trasient
+    R videoModes(R)() 
+      if(isInputRange!R && is(ElementType!R == VideoMode));
+      
+    /// Returns current video mode  
+    VideoMode videoMode() const;   
+}
+
+template isMonitor(T)
+{
+    static if(hasMember!(T, "videoModes"))
     {
-        write(i++, ": ");
-        writeln(monitor.name);
-        foreach(mode; monitor.videoModes)
-        {
-            writeln("size: ", mode.size, " colors: ", mode.colorBits, " refresh rate: ", mode.refreshRate);
-        }
+        alias R = ReturnType!(__traits(getMember, T, "videoModes"));
+        
+        enum hasVideoModes = isInputRange!R && is(ElementType!R == VideoMode);
+    } else
+    {
+        enum hasVideoModes = false;
     }
-    return 0;
+    
+    enum isMonitor = isExpose!(T, CIMonitor) && hasVideoModes;
 }

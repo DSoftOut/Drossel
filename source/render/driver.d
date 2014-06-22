@@ -22,6 +22,11 @@
 */
 module render.driver;
 
+import render.monitor;
+import util.cinterface;
+import std.traits;
+import std.range;
+
 /**
 *   Compile time interface
 */
@@ -34,4 +39,32 @@ struct CIDriver
     
     /// initialization could varies within implementation
     void initialize(T...)(T args);
+    
+    /// Returns available monitors
+    @trasient
+    R monitors(R, M)() const
+        if(isInputRange!R && is(ElementType!R == M) && isMonitor!M);
+    
+    /// Returns primary monitor
+    @trasient
+    M monitor(M)() const
+        if(isMonitor!M);
+}
+
+/// Test if $(B T) is actual a driver
+template isDriver(T)
+{
+    static if(hasMember!(T, "monitors") && hasMember!(T, "monitor"))
+    {
+        alias R1 = ReturnType!(__traits(getMember, T, "monitors"));
+        alias R2 = ReturnType!(__traits(getMember, T, "monitor"));
+        
+        enum hasMonitors = isInputRange!R1 && isMonitor!(ElementType!R1) 
+                        && isMonitor!R2;
+    } else
+    {
+        enum hasMonitors = false;
+    }
+    
+    enum isDriver = isExpose!(T, CIDriver) && hasMonitors;
 }

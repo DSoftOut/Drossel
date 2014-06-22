@@ -29,9 +29,9 @@ import util.log;
 import std.conv;
 
 class PolygonalRenderer(Driver)
-    if(isExpose!(Driver, CIDriver))
+    if(isDriver!Driver)
 {
-    static assert(isExpose!(typeof(this), CIRenderer), "Implementation error!");
+    static assert(isRenderer!(typeof(this)), "Implementation error!");
     mixin Logging;
     
     /// Name of renderer, should include underlying driver
@@ -42,7 +42,7 @@ class PolygonalRenderer(Driver)
     
     this()
     {
-        driver = new Driver();
+        _driver = new Driver();
         initialize();
     }
     
@@ -66,8 +66,18 @@ class PolygonalRenderer(Driver)
         }
     }
     
+    Driver driver()
+    {
+        return _driver;
+    }
+    
+    const(Driver) driver() const
+    {
+        return _driver;
+    }
+    
     private
     {
-        Driver driver;
+        Driver _driver;
     }
 }

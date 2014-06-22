@@ -20,19 +20,28 @@
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
 */
-module render.glfw3opengl3;
+module render.glfw3.opengl3;
 
+import render.glfw3.monitor;
 import render.driver;
 import util.cinterface;
 import util.log;
 import std.exception;
+import std.container;
+import std.range;
 
 import derelict.opengl3.gl3;
-import derelict.glfw3.glfw3;
+import derelict.glfw3.glfw3 :
+    DerelictGLFW3,
+    glfwInit,
+    glfwTerminate,
+    glfwGetMonitors,
+    glfwGetPrimaryMonitor,
+    _GLFWmonitor = GLFWmonitor;
 
 class GLFW3OpenGL3Driver
 {
-    static assert(isExpose!(typeof(this), CIDriver), "Implementation error!");
+    static assert(isDriver!(typeof(this)), "Implementation error!");
     mixin Logging;
     
     /// Driver name
@@ -92,5 +101,28 @@ class GLFW3OpenGL3Driver
     {
         logInfo("Initializing OpenGL3 ...");
         scope(success) logInfo("OpenGL3 initialization is finished!");
+    }
+    
+    auto monitors() const
+    {
+        uint count;
+        auto ptr = glfwGetMonitors(cast(int*)&count);
+        enforce(ptr, raiseLogged("Failed to get monitors!"));
+        
+        DList!GLFWMonitor list;
+        foreach(i; 0 .. count)
+        {
+            list.insert(GLFWMonitor(ptr[i]));
+        }
+        
+        return list[];
+    }
+    
+    GLFWMonitor monitor() const
+    {
+        auto ptr = glfwGetPrimaryMonitor();
+        enforce(ptr, raiseLogged("Failed to get primary monitor!"));
+        
+        return GLFWMonitor(ptr);
     }
 }

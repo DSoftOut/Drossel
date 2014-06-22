@@ -143,27 +143,27 @@ mixin template Logging(LoggerType type = LoggerType.Global)
             return _logger;
         }
         
-        private void logInfo(T...)(T msgs)
+        private void logInfo(T...)(T msgs) const
         {
             _logger.log(text(msgs), LoggingLevel.Notice);
         }
         
-        private void logDebug(T...)(T msgs)
+        private void logDebug(T...)(T msgs) const
         {
             _logger.log(text(msgs), LoggingLevel.Debug);
         }
         
-        private void logError(T...)(T msgs)
+        private void logError(T...)(T msgs) const
         {
             _logger.log(text(msgs), LoggingLevel.Fatal);
         }
         
-        private void logWarning(T...)(T msgs)
+        private void logWarning(T...)(T msgs) const
         {
             _logger.log(text(msgs), LoggingLevel.Warning);
         }
         
-        private LoggedError raiseLogged(T...)(T msgs)
+        private LoggedError raiseLogged(T...)(T msgs) const
         {
             string msg = text(msgs);
             _logger.log(msg, LoggingLevel.Fatal);
@@ -177,27 +177,27 @@ mixin template Logging(LoggerType type = LoggerType.Global)
             return globalLogger;
         }
         
-        private void logInfo(T...)(T msgs)
+        private void logInfo(T...)(T msgs) const
         {
             globalLogger.log(text(msgs), LoggingLevel.Notice);
         }
         
-        private void logDebug(T...)(T msgs)
+        private void logDebug(T...)(T msgs) const
         {
             globalLogger.log(text(msgs), LoggingLevel.Debug);
         }
         
-        private void logError(T...)(T msgs)
+        private void logError(T...)(T msgs) const
         {
             globalLogger.log(text(msgs), LoggingLevel.Fatal);
         }
         
-        private void logWarning(T...)(T msgs)
+        private void logWarning(T...)(T msgs) const
         {
             globalLogger.log(text(msgs), LoggingLevel.Warning);
         }
         
-        private LoggedError raiseLogged(T...)(T msgs)
+        private LoggedError raiseLogged(T...)(T msgs) const
         {
             string msg = text(msgs);
             globalLogger.log(msg, LoggingLevel.Fatal);

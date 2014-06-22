@@ -27,13 +27,29 @@ module util.vec;
 import std.traits;
 import std.conv;
 
+/// Alias for vector of 2 elements
 alias vec2(T) = Vector!(T, 2);
+/// Alias for vector of 3 elements
 alias vec3(T) = Vector!(T, 3);
+/// Alias for vector of 4 elements
+alias vec4(T) = Vector!(T, 4);
+/// Alias for vector of 5 elements
+alias vec5(T) = Vector!(T, 5);
+/// Alias for vector of 6 elements
+alias vec6(T) = Vector!(T, 6);
+/// Alias for vector of 7 elements
+alias vec7(T) = Vector!(T, 7);
 
+/**
+*   Constant size equal $(B n) vector with elements
+*   of type $(B Element).
+*/
 struct Vector(Element, size_t n)
 {
+    /// Piece of memory wher elements are stored
     Element[n] elements;
     
+    /// Creating from passed arguments
     this(Element[n] args ...)
     {
         elements = args;
@@ -41,24 +57,28 @@ struct Vector(Element, size_t n)
     
     static if(n >= 1)
     {
+        /// Returning first element
         Element x() { return elements[0]; }
         const(Element) x() const { return elements[0]; }
     }
     
     static if(n >= 2)
     {
+        /// Returning second element
         Element y() { return elements[1]; }
         const(Element) y() const { return elements[1]; }
     }
     
     static if(n >= 3)
     {
+        /// Returning third element
         Element z() { return elements[2]; }
         const(Element) z() const { return elements[2]; }
     }
     
     static if(n >= 4)
     {
+        /// Returning fourth element
         Element w() { return elements[3]; }
         const(Element) w() const { return elements[3]; }
     }

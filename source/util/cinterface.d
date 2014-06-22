@@ -152,4 +152,10 @@ version(unittest)
     }
     
     static assert(isExpose!(Test3, CITest5));
+    
+    struct CITest6
+    {
+        
+    }
+    static assert(isExpose!(Test3, CITest6));
 }

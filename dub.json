@@ -7,7 +7,8 @@
 	"dependencies" : {
 	   "dlogg": "~master",
 	   "derelict-glfw3": "~master",
-       "derelict-gl3": "~master"
+       "derelict-gl3": "~master",
+       "semver": ">=0.1.0"
 	},
 	"configurations": [
 	   {

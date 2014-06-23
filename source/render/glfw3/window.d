@@ -1,0 +1,421 @@
+// written in the D programming language
+/*
+*   This file is part of DrossyStars.
+*   
+*   DrossyStars is free software: you can redistribute it and/or modify
+*   it under the terms of the GNU General Public License as published by
+*   the Free Software Foundation, either version 3 of the License, or
+*   (at your option) any later version.
+*   
+*   DrossyStars is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU General Public License for more details.
+*   
+*   You should have received a copy of the GNU General Public License
+*   along with DrossyStars.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/**
+*   Copyright: © 2014 Anton Gushcha
+*   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
+*   Authors: Anton Gushcha <ncrashed@gmail.com>
+*/
+module render.glfw3.window;
+
+public import render.window;
+
+import render.glfw3.monitor;
+import util.log;
+import util.vec;
+import derelict.glfw3.glfw3;
+import std.exception;
+import std.string;
+
+class GLFWWindow
+{
+    static assert(isWindow!(typeof(this)), "Implementation error!");
+    mixin Logging;
+    
+    // Constructors for compile-time hints and callbacks
+    /// Creating windowed window
+    static GLFWWindow create(Behavior)(vec2!uint size, string title)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(Behavior(), size, title);
+    }
+    
+    /// Creating fullscreen window
+    static GLFWWindow create(Behavior)(vec2!uint size, string title, GLFWMonitor monitor)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(Behavior(), size, title, monitor);
+    }
+    
+    /// Creating windowed window with shared context
+    static GLFWWindow create(Behavior)(vec2!uint size, string title, GLFWWindow share)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(Behavior(), size, title, share);
+    }
+    
+    /// Creating fullscreen window with shared context
+    static GLFWWindow create(Behavior)(vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(Behavior(), size, title, monitor, share);
+    }
+    
+    // Constructors for run-time hints and callback changing
+    /// Creating windowed window
+    this(B)(B behavior, vec2!uint size, string title)
+        if(isWindowBehavior!B)
+    {
+        setWindowHints(behavior);
+        handle = glfwCreateWindow(size.x, size.y, title.toStringz, null, null);
+        enforce(handle, raiseLogged("Failed to create window!")); 
+        bindCallbacks(behavior);
+        
+        callbacksMap[handle] = WindowDescr(this, behavior);
+    }
+    
+    /// Creating fullscreen window
+    this(B)(B behavior, vec2!uint size, string title, GLFWMonitor monitor)
+        if(isWindowBehavior!B)
+    {
+        setWindowHints(behavior);
+        handle = glfwCreateWindow(size.x, size.y, title.toStringz, monitor.handle, null);
+        enforce(handle, raiseLogged("Failed to create window!")); 
+        bindCallbacks(behavior);
+        
+        callbacksMap[handle] = WindowDescr(this, behavior);
+    }
+    
+    /// Creating windowed window with shared context
+    this(B)(B behavior, vec2!uint size, string title, GLFWWindow share)
+        if(isWindowBehavior!B)
+    {
+        setWindowHints(behavior);
+        handle = glfwCreateWindow(size.x, size.y, title.toStringz, null, share.handle);
+        enforce(handle, raiseLogged("Failed to create window!")); 
+        bindCallbacks(behavior);
+        
+        callbacksMap[handle] = WindowDescr(this, behavior);
+    }
+    
+    /// Creating fullscreen window with shared context
+    this(B)(B behavior, vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
+        if(isWindowBehavior!B)
+    {
+        setWindowHints(behavior);
+        handle = glfwCreateWindow(size.x, size.y, title.toStringz
+            , monitor.handle, share.handle);
+        enforce(handle, raiseLogged("Failed to create window!")); 
+        bindCallbacks(behavior);
+        
+        callbacksMap[handle] = WindowDescr(this, behavior);
+    }
+    
+    /// Used to store hints setting statements
+    private mixin template windowHintsStore(alias store)
+    {
+        void applyHints()
+        {
+            glfwDefaultWindowHints();
+            glfwWindowHint(GLFW_RESIZABLE, store.resizable);
+            glfwWindowHint(GLFW_VISIBLE,   store.visible);
+            glfwWindowHint(GLFW_DECORATED, store.decorated);
+            
+            glfwWindowHint(GLFW_RED_BITS,     store.redBits);
+            glfwWindowHint(GLFW_GREEN_BITS,   store.greenBits);
+            glfwWindowHint(GLFW_BLUE_BITS,    store.blueBits);
+            glfwWindowHint(GLFW_ALPHA_BITS,   store.alphaBits);
+            glfwWindowHint(GLFW_DEPTH_BITS,   store.depthBits);
+            glfwWindowHint(GLFW_STENCIL_BITS, store.stencilBits);
+            
+            glfwWindowHint(GLFW_ACCUM_RED_BITS,   store.accumRedBits);
+            glfwWindowHint(GLFW_ACCUM_GREEN_BITS, store.accumGreenBits);
+            glfwWindowHint(GLFW_ACCUM_BLUE_BITS,  store.accumBlueBits);
+            glfwWindowHint(GLFW_ACCUM_ALPHA_BITS, store.accumAlphaBits);
+            
+            glfwWindowHint(GLFW_AUX_BUFFERS,  store.auxBuffers);
+            glfwWindowHint(GLFW_SAMPLES,      store.samples);
+            glfwWindowHint(GLFW_REFRESH_RATE, store.refreshRate);
+            
+            glfwWindowHint(GLFW_STEREO,       store.stereo);
+            glfwWindowHint(GLFW_SRGB_CAPABLE, store.sRGBCapable);
+        }
+    }
+    
+    /// Compile-time version
+    private void setWindowHints(B)()
+        if(isWindowBehavior!B)
+    {
+        mixin windowHintsStore!B;
+        applyHints();
+    }
+    
+    /// Run-time version
+    private void setWindowHints(B)(B behavior)
+        if(isWindowBehavior!B)
+    {
+        mixin windowHintsStore!behavior;
+        applyHints();
+    }
+    
+    /// Used to store callbacks statements in one place
+    private mixin template callbacksStore(alias store)
+    {
+        static nothrow extern(C) 
+        {
+            void positionCallback(GLFWwindow* handle, int x, int y)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.positionCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+            }
+    
+            void sizeCallback(GLFWwindow* handle, int x, int y)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.sizeCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+            }
+            
+            void closeCallback(GLFWwindow* handle)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.closeCallback(descr.window);
+            }
+            
+            void refreshCallback(GLFWwindow* handle)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.refreshCallback(descr.window);
+            }
+            
+            void focusCallback(GLFWwindow* handle, int flag)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.focusCallback(descr.window, cast(bool)flag);
+            }
+            
+            void iconifyCallback(GLFWwindow* handle, int flag)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.iconifyCallback(descr.window, cast(bool)flag);
+            }
+            
+            void framebufferSizeCallback(GLFWwindow* handle, int x, int y)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.framebufferSizeCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+            }
+        }
+        
+        void bind(alias GLFWFunc, alias Callback)()
+        {
+            GLFWFunc(handle, &Callback);
+        }
+                
+        void applyCallbacks()
+        {
+            bind!(glfwSetWindowPosCallback,       positionCallback);
+            bind!(glfwSetWindowSizeCallback,      sizeCallback);
+            bind!(glfwSetWindowCloseCallback,     closeCallback);
+            bind!(glfwSetWindowRefreshCallback,   refreshCallback);
+            bind!(glfwSetWindowFocusCallback,     focusCallback);
+            bind!(glfwSetWindowIconifyCallback,   iconifyCallback);
+            bind!(glfwSetFramebufferSizeCallback, framebufferSizeCallback);
+        }
+    }
+    
+    /// Compile-time version
+    private void bindCallbacks(B)()
+        if(isWindowBehavior!B)
+    {
+        mixin callbacksStore!B;
+        applyCallbacks();
+    }
+    
+    /// Run-time version
+    private void bindCallbacks(B)(B behavior)
+        if(isWindowBehavior!B)
+    {
+        mixin callbacksStore!behavior;
+        applyCallbacks();
+    }
+    
+    override destroy()
+    {
+        callbacksMap.remove(handle);
+        glfwDestroyWindow(handle);
+        super.destroy();
+    }
+    
+    /// Getting framebuffer size
+    vec2!uint frambebufferSize()
+    {
+        uint width, height;
+        glfwGetWindowSize(handle, cast(int*)&width, cast(int*)&height);
+        return vec2!uint(width, height);
+    }
+    
+    /// Is window focused?
+    bool focused()
+    {
+        return cast(bool)glfwGetWindowAttrib(handle, GLFW_FOCUSED);
+    }
+    
+    /// Is window minimized?
+    bool iconified()
+    {
+        return cast(bool)glfwGetWindowAttrib(handle, GLFW_ICONIFIED);
+    }
+    
+    /// Is window vizible?
+    bool vizible()
+    {
+        return cast(bool)glfwGetWindowAttrib(handle, GLFW_VISIBLE);
+    }
+    
+    /// Is window resizable?
+    bool resizeable()
+    {
+        return cast(bool)glfwGetWindowAttrib(handle, GLFW_RESIZABLE);
+    }
+    
+    /// Is window has OS-specific borders and controls?
+    bool decorated()
+    {
+        return cast(bool)glfwGetWindowAttrib(handle, GLFW_DECORATED);
+    }
+    
+    /// Getting window monitor
+    GLFWMonitor monitor()
+    {
+        auto ptr = glfwGetWindowMonitor(handle);
+        enforce(ptr, raiseLogged("Failed to get window monitor!"));
+        return GLFWMonitor(ptr);
+    }
+    
+    /// Getting window position
+    vec2!uint position()
+    {
+        uint x, y;
+        glfwGetWindowPos(handle, cast(int*)x, cast(int*)y);
+        return vec2!uint(x, y);
+    }
+    
+    /// Setting window position
+    void position(vec2!uint val)
+    {
+        glfwSetWindowPos(handle, val.x, val.y);
+    }
+    
+    /// Getting window size
+    vec2!uint size()
+    {
+        uint width, height;
+        glfwGetWindowSize(handle, cast(int*)width, cast(int*)height);
+        return vec2!uint(width, height);
+    }
+    
+    /// Setting window size
+    void size(vec2!uint val)
+    {
+        glfwSetWindowSize(handle, val.x, val.y);
+    }
+    
+    /// Hides window
+    void hide()
+    {
+        glfwHideWindow(handle);
+    }
+    
+    /// Minimizes window
+    void iconify()
+    {
+        glfwIconifyWindow(handle);
+    }
+    
+    /// Shows window
+    void show()
+    {
+        glfwShowWindow(handle);
+    }
+    
+    /// Restores window from iconified statte
+    void restore()
+    {
+        glfwRestoreWindow(handle);
+    }
+    
+    /// Setting window title
+    void title(string value)
+    {
+        glfwSetWindowTitle(handle, value.toStringz);
+    }
+    
+    /// Is window should be closed
+    bool shouldClose()
+    {
+        return cast(bool)glfwWindowShouldClose(handle);
+    }
+    
+    /// Setting flag that indicates that window should be closed 
+    void shouldClose(bool val)
+    {
+        glfwSetWindowShouldClose(handle, cast(int)val);
+    }
+    
+    /// Called by renderer when the window order comes to be checked
+    void pollEvents()
+    {
+        glfwPollEvents();
+    }
+    
+    override bool opEquals(Object obj)
+    {
+        if(auto win = cast(GLFWWindow)obj)
+        {
+            return win.handle == handle;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    package GLFWwindow* handle;
+    
+    private struct WindowDescr
+    {
+        GLFWWindow window;
+        void function(GLFWWindow window, vec2!uint pos) positionCallback;
+        void function(GLFWWindow window, vec2!uint size) sizeCallback;
+        void function(GLFWWindow window) closeCallback;
+        void function(GLFWWindow window) refreshCallback;
+        void function(GLFWWindow window, bool flag) focusCallback;
+        void function(GLFWWindow window, bool flag) iconifyCallback;
+        void function(GLFWWindow window, vec2!uint size) framebufferSizeCallback;
+        
+        this(B)(GLFWWindow window, B behavior)
+            if(isWindowBehavior!B)
+        {
+            this.window = window;
+            positionCallback        = &behavior.positionCallback;
+            sizeCallback            = &behavior.sizeCallback;
+            closeCallback           = &behavior.closeCallback;
+            refreshCallback         = &behavior.refreshCallback;
+            focusCallback           = &behavior.focusCallback;
+            iconifyCallback         = &behavior.iconifyCallback;
+            framebufferSizeCallback = &behavior.framebufferSizeCallback;
+        } 
+    }
+    private static __gshared WindowDescr[GLFWwindow*] callbacksMap;
+}

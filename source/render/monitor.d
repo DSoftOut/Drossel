@@ -46,6 +46,7 @@ struct CIMonitor
     VideoMode videoMode() const;   
 }
 
+/// Checking if $(B T) is a Monitor
 template isMonitor(T)
 {
     static if(hasMember!(T, "videoModes"))

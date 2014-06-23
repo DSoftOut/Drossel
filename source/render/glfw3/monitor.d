@@ -84,5 +84,5 @@ struct GLFWMonitor
     /// Returns current video mode  
     VideoMode videoMode() const;   
     
-    private _GLFWMonitor* handle;
+    package _GLFWMonitor* handle;
 }

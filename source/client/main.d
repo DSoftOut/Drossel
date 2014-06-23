@@ -26,8 +26,10 @@ module client.main;
 
 import render.polygonal;
 import render.glfw3.opengl3;
+import render.glfw3.window;
 import client.settings;
 import util.log;
+import util.vec;
 import std.stdio;
 
 alias Renderer = PolygonalRenderer!GLFW3OpenGL3Driver;
@@ -36,6 +38,50 @@ shared static this()
 {
     initGlobalLogger!(Settings.loggerName);
 } 
+
+struct MainWindowBehavior
+{
+    static
+    {
+        void positionCallback(GLFWWindow window, vec2!uint pos)
+        {
+            
+        }
+        
+        void sizeCallback(GLFWWindow window, vec2!uint pos)
+        {
+            
+        }
+        
+        void closeCallback(GLFWWindow window) 
+        {
+            
+        }
+        
+        void refreshCallback(GLFWWindow window) 
+        {
+            
+        }
+        
+        void focusCallback(GLFWWindow window, bool flag) 
+        {
+            
+        }
+        
+        void iconifyCallback(GLFWWindow window, bool flag) 
+        {
+            
+        }
+        
+        void framebufferSizeCallback(GLFWWindow window, vec2!uint pos)
+        {
+            
+        }
+    }
+    
+    mixin addDefaultWindowBehavior!(GLFWWindow, __traits(allMembers, typeof(this)));
+}
+static assert(isWindowBehavior!MainWindowBehavior);
 
 int main(string[] args)
 {
@@ -53,5 +99,7 @@ int main(string[] args)
             writeln("size: ", mode.size, " colors: ", mode.colorBits, " refresh rate: ", mode.refreshRate);
         }
     }
+    
+    auto mainWindow = GLFWWindow.create!MainWindowBehavior(vec2!uint(600, 800), "Test window!");
     return 0;
 }

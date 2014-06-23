@@ -30,9 +30,10 @@ import render.glfw3.window;
 import client.settings;
 import util.log;
 import util.vec;
+import util.functional;
 import std.stdio;
 
-alias Renderer = PolygonalRenderer!GLFW3OpenGL3Driver;
+alias Renderer = PolygonalRenderer!(GLFW3OpenGL3Driver, GLFWWindow);
  
 shared static this()
 {
@@ -41,44 +42,11 @@ shared static this()
 
 struct MainWindowBehavior
 {
-    static
+    static void closeCallback(GLFWWindow window) 
     {
-        void positionCallback(GLFWWindow window, vec2!uint pos)
-        {
-            
-        }
-        
-        void sizeCallback(GLFWWindow window, vec2!uint pos)
-        {
-            
-        }
-        
-        void closeCallback(GLFWWindow window) 
-        {
-            
-        }
-        
-        void refreshCallback(GLFWWindow window) 
-        {
-            
-        }
-        
-        void focusCallback(GLFWWindow window, bool flag) 
-        {
-            
-        }
-        
-        void iconifyCallback(GLFWWindow window, bool flag) 
-        {
-            
-        }
-        
-        void framebufferSizeCallback(GLFWWindow window, vec2!uint pos)
-        {
-            
-        }
+        window.shouldClose = true;
     }
-    
+        
     mixin addDefaultWindowBehavior!(GLFWWindow, __traits(allMembers, typeof(this)));
 }
 static assert(isWindowBehavior!MainWindowBehavior);
@@ -100,6 +68,8 @@ int main(string[] args)
         }
     }
     
-    auto mainWindow = GLFWWindow.create!MainWindowBehavior(vec2!uint(600, 800), "Test window!");
+    auto mainWindow = renderer.createWindow!MainWindowBehavior(vec2!uint(600, 800), "Test window!");
+    
+    renderer.startEventListening;
     return 0;
 }

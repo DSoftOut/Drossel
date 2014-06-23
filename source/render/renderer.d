@@ -23,8 +23,12 @@
 module render.renderer;
 
 import render.driver;
+import render.window;
 import util.cinterface;
 import std.traits;
+import std.range;
+import std.typecons;
+import std.typetuple;
 
 /**
 *   Compile-time interface describing rendering subsystem.
@@ -42,20 +46,83 @@ struct CIRenderer
     /// Get driver of the renderer
     @trasient
     Driver driver()() if(isDriver!Driver); 
+    
+    /// Get windows that was defined in compile-time and added in runtime
+    @trasient
+    Tuple!(WindowsRanges) windows(Windows...)()
+        if( allSatisfy!(isInputRange, WindowsRanges) &&
+            allSatisfy!(isWindow, staticMap!(ElementType, WindowsRanges))
+          );
+    
+    /// Creates new window that is supported by the renderer
+    /**
+    *   Created window is returned. $(B args) are passed to window $(B create)
+    *   method.
+    *
+    *   Renderer should add this window to dispatching cycle and start to listen
+    *   events.
+    *   
+    *   Note: the $(B Window) have to supported by the renderer.
+    *   ----
+    *   staticIndexOf!(Window, staticMap!(ElementType, ReturnType!windows.expand)) != -1
+    *   ----
+    */
+    @trasient
+    Window createWindow(Window, Behavior, Args...)(Args args)
+        if(isWindowBehavior!Behavior);
+
+    /// Creates new window that is supported by the renderer, dynamic version
+    /**
+    *   Created window is returned. $(B args) are passed to window $(B create)
+    *   method.
+    *
+    *   Renderer should add this window to dispatching cycle and start to listen
+    *   events.
+    *   
+    *   Note: the $(B Window) have to supported by the renderer.
+    *   ----
+    *   staticIndexOf!(Window, staticMap!(ElementType, ReturnType!windows.expand)) != -1
+    *   ----
+    */ 
+    @trasient
+    Window createWindow(Window, Behavior, Args...)(Behavior behavior, Args args)
+        if(isWindowBehavior!Behavior);
+                
+    /// Blocking. Infinite loop that updates windows
+    void startEventListening();
 }
 
 /// Test if $(B T) is actual renderer
 template isRenderer(T)
 {
-    static if(hasMember!(T, "driver"))
+    private template extract(alias T)
     {
-        alias R = ReturnType!(__traits(getMember, T, "driver"));
-        
-        enum hasDriver = isDriver!R;
-    } else
-    {
-        enum hasDriver = false;
+        static if(is(T : Tuple!U, U...))
+        {
+            alias extract = U;
+        }
+        else
+        {
+            alias extract = List!();
+        }
     }
     
-    enum isRenderer = isExpose!(T, CIRenderer) && hasDriver;
+    static if(hasMember!(T, "driver") 
+        &&    hasMember!(T, "windows")
+        &&    hasMember!(T, "createWindow"))
+    {
+        alias Driver = ReturnType!(__traits(getMember, T, "driver"));
+        alias WindowsRanges = extract!(ReturnType!(__traits(getMember, T, "windows")));
+                
+        enum hasExtra = isDriver!Driver
+            && allSatisfy!(isInputRange, WindowsRanges) 
+            && allSatisfy!(isWindow, staticMap!(ElementType, WindowsRanges)
+            );
+
+    } else
+    {
+        enum hasExtra = false;
+    }
+    
+    enum isRenderer = isExpose!(T, CIRenderer) && hasExtra;
 }

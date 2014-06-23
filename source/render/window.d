@@ -31,6 +31,22 @@ import std.traits;
 /// Window compile-time interface
 struct CIWindow
 {
+    /// Creating with specified $(B Behavior)
+    /**
+    *   $(B Args) are specific for implementation.
+    */
+    @trasient
+    static CIWindow create(Behavior, Args...)(Args args)
+        if(isWindowBehavior!Behavior);
+    
+    /// Creating with specified $(B Behavior), dynamic version
+    /**
+    *   $(B Args) are specific for implementation.
+    */
+    @trasient
+    static CIWindow create(Behavior, Args...)(Behavior behavior, Args args)
+        if(isWindowBehavior!Behavior);
+        
     /// Getting framebuffer size
     vec2!uint frambebufferSize();
     
@@ -88,12 +104,15 @@ struct CIWindow
     
     /// Called by renderer when the window order comes to be checked
     void pollEvents();
+    
+    /// Called by renderer when the window order comes to be checked
+    void swapBuffers();
 }
 
 /// Checking is $(B T) is a window
 template isWindow(T)
 {
-    static if(hasMember!(T, "monitor"))
+    static if(hasMember!(T, "monitor") && hasMember!(T, "create"))
     {
         alias R = ReturnType!(__traits(getMember, T, "monitor"));
         
@@ -222,14 +241,28 @@ template isWindowBehavior(T)
         "positionCallback", StrictList!(vec2!uint),
         "sizeCallback", StrictList!(vec2!uint),
         "closeCallback", StrictList!(),
+        "refreshCallback", StrictList!(),
         "focusCallback", StrictList!bool,
         "iconifyCallback", StrictList!bool,
-        "framebufferSizeCallback", StrictList!(vec2!uint)
-        );
+        "framebufferSizeCallback", StrictList!(vec2!uint));
 }
 
 /**
 *   Mixin that adds missing window hints and callbacks to your window behavior type.
+*
+*   Example:
+*   ---------
+*   struct MainWindowBehavior
+*   {
+*       static void closeCallback(GLFWWindow window) 
+*       {
+*           window.shouldClose = true;
+*       }
+*           
+*       mixin addDefaultWindowBehavior!(GLFWWindow, __traits(allMembers, typeof(this)));
+*   }
+*   static assert(isWindowBehavior!MainWindowBehavior);
+*   ---------
 */
 mixin template addDefaultWindowBehavior(alias W, Members...)
 {
@@ -335,5 +368,55 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     {
         /// Specifies whether the framebuffer should be sRGB capable.
         enum bool sRGBCapable = false;
+    }
+    
+    static if(!hasSymbol!"positionCallback")
+    {
+        static void positionCallback(W window, vec2!uint pos)
+        {
+            
+        }
+    }
+    static if(!hasSymbol!"sizeCallback")
+    {    
+        static void sizeCallback(W window, vec2!uint pos)
+        {
+            
+        }
+    }
+    static if(!hasSymbol!"closeCallback")
+    {    
+        static void closeCallback(W window) 
+        {
+            
+        }
+    }
+    static if(!hasSymbol!"refreshCallback")
+    {    
+        static void refreshCallback(W window) 
+        {
+            
+        }
+    }
+    static if(!hasSymbol!"focusCallback")
+    {    
+        static void focusCallback(W window, bool flag) 
+        {
+            
+        }
+    }
+    static if(!hasSymbol!"iconifyCallback")
+    {    
+        static void iconifyCallback(W window, bool flag) 
+        {
+            
+        }
+    }
+    static if(!hasSymbol!"framebufferSizeCallback")
+    {    
+        static void framebufferSizeCallback(W window, vec2!uint pos)
+        {
+            
+        }
     }
 }

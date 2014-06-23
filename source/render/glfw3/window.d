@@ -65,6 +65,34 @@ class GLFWWindow
         return new GLFWWindow(Behavior(), size, title, monitor, share);
     }
     
+    /// Creating windowed window
+    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(behavior, size, title);
+    }
+    
+    /// Creating fullscreen window
+    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title, GLFWMonitor monitor)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(behavior, size, title, monitor);
+    }
+    
+    /// Creating windowed window with shared context
+    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title, GLFWWindow share)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(behavior, size, title, share);
+    }
+    
+    /// Creating fullscreen window with shared context
+    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
+        if(isWindowBehavior!Behavior)
+    {
+        return new GLFWWindow(behavior, size, title, monitor, share);
+    }
+    
     // Constructors for run-time hints and callback changing
     /// Creating windowed window
     this(B)(B behavior, vec2!uint size, string title)
@@ -377,6 +405,12 @@ class GLFWWindow
     void pollEvents()
     {
         glfwPollEvents();
+    }
+    
+    /// Called by renderer when the window order comes to be checked
+    void swapBuffers()
+    {
+        glfwSwapBuffers(handle);
     }
     
     override bool opEquals(Object obj)

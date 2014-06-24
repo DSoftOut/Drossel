@@ -98,4 +98,17 @@ struct Vector(Element, size_t n)
         }
         sink(")");
     }
+    
+    auto opBinary(string op, OtherElement)(Vector!(OtherElement, n) vec)
+        if((op == "-" || op == "+" || op == "/" || op == "*") &&
+            __traits(compiles, Element.init / OtherElement.init))
+    {
+        alias NewElement = typeof(Element.init / OtherElement.init);
+        
+        NewElement[n] buff;
+        foreach(i, ref elem; buff)
+            elem = mixin(`elements[i] `~op~`vec.elements[i]`);
+            
+        return Vector!(NewElement, n)(buff);
+    }
 } 

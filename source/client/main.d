@@ -27,6 +27,9 @@ module client.main;
 import render.polygonal;
 import render.glfw3.opengl3;
 import render.glfw3.window;
+import render.input.mouse;
+import render.input.mods;
+import render.input.keyboard;
 import client.settings;
 import util.log;
 import util.vec;
@@ -46,7 +49,34 @@ struct MainWindowBehavior
     {
         window.shouldClose = true;
     }
-        
+     
+    static void mouseButtonCallback(GLFWWindow window, MouseButton button
+            , MouseButtonAction action, Modificators mods)
+    {
+        writeln(button, " ", action, " ", mods);
+    }
+    
+    static void cursorPosCallback(GLFWWindow window, vec2!double pos)
+    {
+        writeln("Mouse pos: ", pos);
+    }
+    
+    static void cursorEnterCallback(GLFWWindow window, bool flag)
+    {
+        writeln("Curosor enter: ", flag);
+    }
+    
+    static void scrollCallback(GLFWWindow window, vec2!double offset)
+    {
+        writeln("Cursor scroll: ", offset);
+    }
+    
+    static void keyCallback(GLFWWindow window, KeyboardKey key, uint scancode
+            , KeyboardKeyAction action, Modificators mods)
+    {
+        writeln("Key event: ", key, " ", scancode, " ", action, " ", mods); 
+    }
+    
     mixin addDefaultWindowBehavior!(GLFWWindow, __traits(allMembers, typeof(this)));
 }
 static assert(isWindowBehavior!MainWindowBehavior);

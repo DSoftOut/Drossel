@@ -23,6 +23,9 @@
 module render.window;
 
 import render.monitor;
+import render.input.keyboard;
+import render.input.mouse;
+import render.input.mods;
 import util.vec;
 import util.cinterface;
 import util.functional;
@@ -167,6 +170,37 @@ struct CIWindowBehavior
         @trasient
         void framebufferSizeCallback(W)(W window, vec2!uint size)
             if(isWindow!W);
+        
+        /// Called when mouse button is pressed or released    
+        @trasient
+        void mouseButtonCallback(W)(W window, MouseButton button
+            , MouseButtonAction action, Modificators mods) if(isWindow!W);
+        
+        /// Called when mouse cursor is moved over the window    
+        /**
+        *   Position should be relative, i.e. each coordinate in range of [0, 1].
+        */
+        @trasient
+        void cursorPosCallback(W)(W window, vec2!double pos)
+            if(isWindow!W);
+            
+        /// Called when cursor enters or leaves the window
+        @trasient
+        void cursorEnterCallback(W)(W window, bool flag) if(isWindow!W);
+        
+        /// Called when the window is scrolled
+        @trasient
+        void scrollCallback(W)(W window, vec2!double offset)
+            if(isWindow!W);
+            
+        /// Called when keyboard key is pressed while the window is focused
+        @trasient
+        void keyCallback(W)(W window, KeyboardKey key, uint scancode
+            , KeyboardKeyAction action, Modificators mods) if(isWindow!W);
+        
+        /// Called when unicode char is inputed to the window
+        @trasient
+        void charCallback(W)(W window, dchar codepoint) if(isWindow!W);
     }
     
     // Window options while creation
@@ -244,7 +278,13 @@ template isWindowBehavior(T)
         "refreshCallback", StrictList!(),
         "focusCallback", StrictList!bool,
         "iconifyCallback", StrictList!bool,
-        "framebufferSizeCallback", StrictList!(vec2!uint));
+        "framebufferSizeCallback", StrictList!(vec2!uint),
+        "mouseButtonCallback", StrictList!(MouseButton, MouseButtonAction, Modificators),
+        "cursorPosCallback", StrictList!(vec2!double),
+        "cursorEnterCallback", StrictList!bool,
+        "scrollCallback", StrictList!(vec2!double),
+        "keyCallback", StrictList!(KeyboardKey, uint, KeyboardKeyAction, Modificators),
+        "charCallback", StrictList!dchar);
 }
 
 /**
@@ -268,6 +308,9 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
 {
     import std.traits;
     import std.typetuple;
+    import render.input.keyboard;
+    import render.input.mouse;
+    import render.input.mods;
     
     private template hasSymbol(string name)
     {
@@ -417,6 +460,57 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
         static void framebufferSizeCallback(W window, vec2!uint pos)
         {
             
+        }
+    }
+    
+    static if(!hasSymbol!"mouseButtonCallback")
+    {
+        /// Called when mouse button is pressed or released    
+        static void mouseButtonCallback(W window, MouseButton button
+            , MouseButtonAction action, Modificators mods)
+        {
+        
+        }
+    }
+    static if(!hasSymbol!"cursorPosCallback")
+    {
+        /// Called when mouse cursor is moved over the window    
+        static void cursorPosCallback(W window, vec2!double pos)
+        {
+        
+        }
+    }
+    static if(!hasSymbol!"cursorEnterCallback")
+    {
+        /// Called when cursor enters or leaves the window
+        static void cursorEnterCallback(W window, bool flag)
+        {
+        
+        }
+    }
+    static if(!hasSymbol!"scrollCallback")
+    {
+        /// Called when the window is scrolled
+        static void scrollCallback(W window, vec2!double offset)
+        {
+        
+        }
+    }
+    static if(!hasSymbol!"keyCallback")
+    {
+        /// Called when keyboard key is pressed while the window is focused
+        static void keyCallback(W window, KeyboardKey key, uint scancode
+            , KeyboardKeyAction action, Modificators mods)
+        {
+        
+        }
+    }
+    static if(!hasSymbol!"charCallback")
+    {
+        /// Called when unicode char is inputed to the window
+        static void charCallback(W window, dchar codepoint)
+        {
+        
         }
     }
 }

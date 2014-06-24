@@ -24,6 +24,10 @@ module render.glfw3.window;
 
 public import render.window;
 
+import render.input.keyboard;
+import render.input.mouse;
+import render.input.mods;
+
 import render.glfw3.monitor;
 import util.log;
 import util.vec;
@@ -243,6 +247,53 @@ class GLFWWindow
                 if(auto descr = handle in callbacksMap)
                     descr.framebufferSizeCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
             }
+            
+            void mouseButtonCallback(GLFWwindow* handle, int button, int action, int mods)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.mouseButtonCallback(descr.window
+                        , cast(MouseButton)button, cast(MouseButtonAction)action
+                        , Modificators.fromBitfield(mods));
+            }
+            
+            void cursorPosCallback(GLFWwindow* handle, double xpos, double ypos)
+            {
+                scope(failure) {} 
+                if(auto descr = handle in callbacksMap) 
+                    descr.cursorPosCallback(descr.window, vec2!double(xpos, ypos) / descr.window.size);
+            }
+            
+            void cursorEnterCallback(GLFWwindow* handle, int flag)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.cursorEnterCallback(descr.window, cast(bool)flag);
+            }
+            
+            void scrollCallback(GLFWwindow* handle, double xoffset, double yoffset)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.scrollCallback(descr.window, vec2!double(xoffset, yoffset));
+            }
+            
+            void keyCallback(GLFWwindow* handle, int key, int scancode, int action, int mods)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.keyCallback(descr.window
+                        , cast(KeyboardKey)key, cast(uint)scancode
+                        , cast(KeyboardKeyAction)action
+                        , Modificators.fromBitfield(mods));
+            }
+            
+            void charCallback(GLFWwindow* handle, uint codepoint)
+            {
+                scope(failure) {}
+                if(auto descr = handle in callbacksMap)
+                    descr.charCallback(descr.window, cast(dchar)codepoint);
+            }
         }
         
         void bind(alias GLFWFunc, alias Callback)()
@@ -259,6 +310,13 @@ class GLFWWindow
             bind!(glfwSetWindowFocusCallback,     focusCallback);
             bind!(glfwSetWindowIconifyCallback,   iconifyCallback);
             bind!(glfwSetFramebufferSizeCallback, framebufferSizeCallback);
+            
+            bind!(glfwSetMouseButtonCallback,     mouseButtonCallback);
+            bind!(glfwSetCursorPosCallback,       cursorPosCallback);
+            bind!(glfwSetCursorEnterCallback,     cursorEnterCallback);
+            bind!(glfwSetScrollCallback,          scrollCallback);
+            bind!(glfwSetKeyCallback,             keyCallback);
+            bind!(glfwSetCharCallback,            charCallback);
         }
     }
     
@@ -335,7 +393,7 @@ class GLFWWindow
     vec2!uint position()
     {
         uint x, y;
-        glfwGetWindowPos(handle, cast(int*)x, cast(int*)y);
+        glfwGetWindowPos(handle, cast(int*)&x, cast(int*)&y);
         return vec2!uint(x, y);
     }
     
@@ -349,7 +407,7 @@ class GLFWWindow
     vec2!uint size()
     {
         uint width, height;
-        glfwGetWindowSize(handle, cast(int*)width, cast(int*)height);
+        glfwGetWindowSize(handle, cast(int*)&width, cast(int*)&height);
         return vec2!uint(width, height);
     }
     
@@ -438,6 +496,15 @@ class GLFWWindow
         void function(GLFWWindow window, bool flag) iconifyCallback;
         void function(GLFWWindow window, vec2!uint size) framebufferSizeCallback;
         
+        void function(GLFWWindow, MouseButton, MouseButtonAction, Modificators)
+            mouseButtonCallback;
+        void function(GLFWWindow, vec2!double) cursorPosCallback;
+        void function(GLFWWindow, bool) cursorEnterCallback;
+        void function(GLFWWindow, vec2!double) scrollCallback;
+        void function(GLFWWindow, KeyboardKey, uint, KeyboardKeyAction, Modificators)
+            keyCallback;
+        void function(GLFWWindow, dchar) charCallback;
+        
         this(B)(GLFWWindow window, B behavior)
             if(isWindowBehavior!B)
         {
@@ -449,6 +516,13 @@ class GLFWWindow
             focusCallback           = &behavior.focusCallback;
             iconifyCallback         = &behavior.iconifyCallback;
             framebufferSizeCallback = &behavior.framebufferSizeCallback;
+            
+            mouseButtonCallback     = &behavior.mouseButtonCallback;
+            cursorPosCallback       = &behavior.cursorPosCallback;
+            cursorEnterCallback     = &behavior.cursorEnterCallback;
+            scrollCallback          = &behavior.scrollCallback;
+            keyCallback             = &behavior.keyCallback;
+            charCallback            = &behavior.charCallback;
         } 
     }
     private static __gshared WindowDescr[GLFWwindow*] callbacksMap;

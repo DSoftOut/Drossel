@@ -138,70 +138,68 @@ template isWindow(T)
 */
 struct CIWindowBehavior
 {
-    static
-    {
-        /// Called when window position is changed
-        @trasient
-        void positionCallback(W)(W window, vec2!uint pos)
-            if(isWindow!W);
+    /// Called when window position is changed
+    @trasient
+    void positionCallback(W)(W window, vec2!uint pos)
+        if(isWindow!W);
+    
+    /// Called when window size is changed    
+    @trasient
+    void sizeCallback(W)(W window, vec2!uint size)
+        if(isWindow!W);
         
-        /// Called when window size is changed    
-        @trasient
-        void sizeCallback(W)(W window, vec2!uint size)
-            if(isWindow!W);
-            
-        /// Called when window is closing
-        @trasient
-        void closeCallback(W)(W window) if(isWindow!W);
+    /// Called when window is closing
+    @trasient
+    void closeCallback(W)(W window) if(isWindow!W);
+    
+    /// Called when window is refreshed
+    @trasient
+    void refreshCallback(W)(W window) if(isWindow!W);
+    
+    /// Called when window get or loose focus
+    @trasient
+    void focusCallback(W)(W window, bool flag) if(isWindow!W);
+    
+    /// Called when window iconified or restored
+    @trasient
+    void iconifyCallback(W)(W window, bool flag) if(isWindow!W);
+    
+    /// Called when window framebuffer changes it size
+    @trasient
+    void framebufferSizeCallback(W)(W window, vec2!uint size)
+        if(isWindow!W);
+    
+    /// Called when mouse button is pressed or released    
+    @trasient
+    void mouseButtonCallback(W)(W window, MouseButton button
+        , MouseButtonAction action, Modificators mods) if(isWindow!W);
+    
+    /// Called when mouse cursor is moved over the window    
+    /**
+    *   Position should be relative, i.e. each coordinate in range of [0, 1].
+    */
+    @trasient
+    void cursorPosCallback(W)(W window, vec2!double pos)
+        if(isWindow!W);
         
-        /// Called when window is refreshed
-        @trasient
-        void refreshCallback(W)(W window) if(isWindow!W);
+    /// Called when cursor enters or leaves the window
+    @trasient
+    void cursorEnterCallback(W)(W window, bool flag) if(isWindow!W);
+    
+    /// Called when the window is scrolled
+    @trasient
+    void scrollCallback(W)(W window, vec2!double offset)
+        if(isWindow!W);
         
-        /// Called when window get or loose focus
-        @trasient
-        void focusCallback(W)(W window, bool flag) if(isWindow!W);
-        
-        /// Called when window iconified or restored
-        @trasient
-        void iconifyCallback(W)(W window, bool flag) if(isWindow!W);
-        
-        /// Called when window framebuffer changes it size
-        @trasient
-        void framebufferSizeCallback(W)(W window, vec2!uint size)
-            if(isWindow!W);
-        
-        /// Called when mouse button is pressed or released    
-        @trasient
-        void mouseButtonCallback(W)(W window, MouseButton button
-            , MouseButtonAction action, Modificators mods) if(isWindow!W);
-        
-        /// Called when mouse cursor is moved over the window    
-        /**
-        *   Position should be relative, i.e. each coordinate in range of [0, 1].
-        */
-        @trasient
-        void cursorPosCallback(W)(W window, vec2!double pos)
-            if(isWindow!W);
-            
-        /// Called when cursor enters or leaves the window
-        @trasient
-        void cursorEnterCallback(W)(W window, bool flag) if(isWindow!W);
-        
-        /// Called when the window is scrolled
-        @trasient
-        void scrollCallback(W)(W window, vec2!double offset)
-            if(isWindow!W);
-            
-        /// Called when keyboard key is pressed while the window is focused
-        @trasient
-        void keyCallback(W)(W window, KeyboardKey key, uint scancode
-            , KeyboardKeyAction action, Modificators mods) if(isWindow!W);
-        
-        /// Called when unicode char is inputed to the window
-        @trasient
-        void charCallback(W)(W window, dchar codepoint) if(isWindow!W);
-    }
+    /// Called when keyboard key is pressed while the window is focused
+    @trasient
+    void keyCallback(W)(W window, KeyboardKey key, uint scancode
+        , KeyboardKeyAction action, Modificators mods) if(isWindow!W);
+    
+    /// Called when unicode char is inputed to the window
+    @trasient
+    void charCallback(W)(W window, dchar codepoint) if(isWindow!W);
+
     
     // Window options while creation
     // default values are only for example
@@ -415,49 +413,49 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     
     static if(!hasSymbol!"positionCallback")
     {
-        static void positionCallback(W window, vec2!uint pos)
+        void positionCallback(W window, vec2!uint pos)
         {
             
         }
     }
     static if(!hasSymbol!"sizeCallback")
     {    
-        static void sizeCallback(W window, vec2!uint pos)
+        void sizeCallback(W window, vec2!uint pos)
         {
             
         }
     }
     static if(!hasSymbol!"closeCallback")
     {    
-        static void closeCallback(W window) 
+        void closeCallback(W window) 
         {
             
         }
     }
     static if(!hasSymbol!"refreshCallback")
     {    
-        static void refreshCallback(W window) 
+        void refreshCallback(W window) 
         {
             
         }
     }
     static if(!hasSymbol!"focusCallback")
     {    
-        static void focusCallback(W window, bool flag) 
+        void focusCallback(W window, bool flag) 
         {
             
         }
     }
     static if(!hasSymbol!"iconifyCallback")
     {    
-        static void iconifyCallback(W window, bool flag) 
+        void iconifyCallback(W window, bool flag) 
         {
             
         }
     }
     static if(!hasSymbol!"framebufferSizeCallback")
     {    
-        static void framebufferSizeCallback(W window, vec2!uint pos)
+        void framebufferSizeCallback(W window, vec2!uint pos)
         {
             
         }
@@ -466,7 +464,7 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     static if(!hasSymbol!"mouseButtonCallback")
     {
         /// Called when mouse button is pressed or released    
-        static void mouseButtonCallback(W window, MouseButton button
+        void mouseButtonCallback(W window, MouseButton button
             , MouseButtonAction action, Modificators mods)
         {
         
@@ -475,7 +473,7 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     static if(!hasSymbol!"cursorPosCallback")
     {
         /// Called when mouse cursor is moved over the window    
-        static void cursorPosCallback(W window, vec2!double pos)
+        void cursorPosCallback(W window, vec2!double pos)
         {
         
         }
@@ -483,7 +481,7 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     static if(!hasSymbol!"cursorEnterCallback")
     {
         /// Called when cursor enters or leaves the window
-        static void cursorEnterCallback(W window, bool flag)
+        void cursorEnterCallback(W window, bool flag)
         {
         
         }
@@ -491,7 +489,7 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     static if(!hasSymbol!"scrollCallback")
     {
         /// Called when the window is scrolled
-        static void scrollCallback(W window, vec2!double offset)
+        void scrollCallback(W window, vec2!double offset)
         {
         
         }
@@ -499,7 +497,7 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     static if(!hasSymbol!"keyCallback")
     {
         /// Called when keyboard key is pressed while the window is focused
-        static void keyCallback(W window, KeyboardKey key, uint scancode
+        void keyCallback(W window, KeyboardKey key, uint scancode
             , KeyboardKeyAction action, Modificators mods)
         {
         
@@ -508,7 +506,7 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     static if(!hasSymbol!"charCallback")
     {
         /// Called when unicode char is inputed to the window
-        static void charCallback(W window, dchar codepoint)
+        void charCallback(W window, dchar codepoint)
         {
         
         }

@@ -34,6 +34,7 @@ import util.vec;
 import derelict.glfw3.glfw3;
 import std.exception;
 import std.string;
+import std.functional;
 
 class GLFWWindow
 {
@@ -488,41 +489,41 @@ class GLFWWindow
     private struct WindowDescr
     {
         GLFWWindow window;
-        void function(GLFWWindow window, vec2!uint pos) positionCallback;
-        void function(GLFWWindow window, vec2!uint size) sizeCallback;
-        void function(GLFWWindow window) closeCallback;
-        void function(GLFWWindow window) refreshCallback;
-        void function(GLFWWindow window, bool flag) focusCallback;
-        void function(GLFWWindow window, bool flag) iconifyCallback;
-        void function(GLFWWindow window, vec2!uint size) framebufferSizeCallback;
+        void delegate(GLFWWindow window, vec2!uint pos) positionCallback;
+        void delegate(GLFWWindow window, vec2!uint size) sizeCallback;
+        void delegate(GLFWWindow window) closeCallback;
+        void delegate(GLFWWindow window) refreshCallback;
+        void delegate(GLFWWindow window, bool flag) focusCallback;
+        void delegate(GLFWWindow window, bool flag) iconifyCallback;
+        void delegate(GLFWWindow window, vec2!uint size) framebufferSizeCallback;
         
-        void function(GLFWWindow, MouseButton, MouseButtonAction, Modificators)
+        void delegate(GLFWWindow, MouseButton, MouseButtonAction, Modificators)
             mouseButtonCallback;
-        void function(GLFWWindow, vec2!double) cursorPosCallback;
-        void function(GLFWWindow, bool) cursorEnterCallback;
-        void function(GLFWWindow, vec2!double) scrollCallback;
-        void function(GLFWWindow, KeyboardKey, uint, KeyboardKeyAction, Modificators)
+        void delegate(GLFWWindow, vec2!double) cursorPosCallback;
+        void delegate(GLFWWindow, bool) cursorEnterCallback;
+        void delegate(GLFWWindow, vec2!double) scrollCallback;
+        void delegate(GLFWWindow, KeyboardKey, uint, KeyboardKeyAction, Modificators)
             keyCallback;
-        void function(GLFWWindow, dchar) charCallback;
+        void delegate(GLFWWindow, dchar) charCallback;
         
         this(B)(GLFWWindow window, B behavior)
             if(isWindowBehavior!B)
         {
             this.window = window;
-            positionCallback        = &behavior.positionCallback;
-            sizeCallback            = &behavior.sizeCallback;
-            closeCallback           = &behavior.closeCallback;
-            refreshCallback         = &behavior.refreshCallback;
-            focusCallback           = &behavior.focusCallback;
-            iconifyCallback         = &behavior.iconifyCallback;
-            framebufferSizeCallback = &behavior.framebufferSizeCallback;
+            positionCallback        = toDelegate(&behavior.positionCallback);
+            sizeCallback            = toDelegate(&behavior.sizeCallback);
+            closeCallback           = toDelegate(&behavior.closeCallback);
+            refreshCallback         = toDelegate(&behavior.refreshCallback);
+            focusCallback           = toDelegate(&behavior.focusCallback);
+            iconifyCallback         = toDelegate(&behavior.iconifyCallback);
+            framebufferSizeCallback = toDelegate(&behavior.framebufferSizeCallback);
             
-            mouseButtonCallback     = &behavior.mouseButtonCallback;
-            cursorPosCallback       = &behavior.cursorPosCallback;
-            cursorEnterCallback     = &behavior.cursorEnterCallback;
-            scrollCallback          = &behavior.scrollCallback;
-            keyCallback             = &behavior.keyCallback;
-            charCallback            = &behavior.charCallback;
+            mouseButtonCallback     = toDelegate(&behavior.mouseButtonCallback);
+            cursorPosCallback       = toDelegate(&behavior.cursorPosCallback);
+            cursorEnterCallback     = toDelegate(&behavior.cursorEnterCallback);
+            scrollCallback          = toDelegate(&behavior.scrollCallback);
+            keyCallback             = toDelegate(&behavior.keyCallback);
+            charCallback            = toDelegate(&behavior.charCallback);
         } 
     }
     private static __gshared WindowDescr[GLFWwindow*] callbacksMap;

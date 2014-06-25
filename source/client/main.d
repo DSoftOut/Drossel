@@ -45,33 +45,33 @@ shared static this()
 
 struct MainWindowBehavior
 {
-    static void closeCallback(GLFWWindow window) 
+    void closeCallback(GLFWWindow window) 
     {
         window.shouldClose = true;
     }
      
-    static void mouseButtonCallback(GLFWWindow window, MouseButton button
+    void mouseButtonCallback(GLFWWindow window, MouseButton button
             , MouseButtonAction action, Modificators mods)
     {
         writeln(button, " ", action, " ", mods);
     }
     
-    static void cursorPosCallback(GLFWWindow window, vec2!double pos)
+    void cursorPosCallback(GLFWWindow window, vec2!double pos)
     {
         writeln("Mouse pos: ", pos);
     }
     
-    static void cursorEnterCallback(GLFWWindow window, bool flag)
+    void cursorEnterCallback(GLFWWindow window, bool flag)
     {
         writeln("Curosor enter: ", flag);
     }
     
-    static void scrollCallback(GLFWWindow window, vec2!double offset)
+    void scrollCallback(GLFWWindow window, vec2!double offset)
     {
         writeln("Cursor scroll: ", offset);
     }
     
-    static void keyCallback(GLFWWindow window, KeyboardKey key, uint scancode
+    void keyCallback(GLFWWindow window, KeyboardKey key, uint scancode
             , KeyboardKeyAction action, Modificators mods)
     {
         writeln("Key event: ", key, " ", scancode, " ", action, " ", mods); 

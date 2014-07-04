@@ -11,21 +11,28 @@
        "semver": ">=0.1.0"
 	},
 	"configurations": [
-	   {
-	       "name": "client",
-	       "description": "Game client, that is built with rendering subsystem, but also is able to handle server functions.",
-	       "targetType": "executable",
-	       "targetName": "drossy-starts-client",
-	       "mainSourceFile": "source/client/main.d",
-	       "excludedSourceFiles": ["source/server/*"]
-	   },
-	   {
-           "name": "server",
-           "description": "Game server, that is built without rendering subsystem.",
-           "targetType": "executable",
-           "targetName": "drossy-starts-server",
-           "mainSourceFile": "source/server/main.d",
-           "excludedSourceFiles": ["source/client/*"]
-	   }
+		{
+	   		"name": "library",
+	   		"description": "Engine as library",
+	   		"targetType": "library",
+	   		"targetName": "drossy-stars-engine",
+	   		"excludedSourceFiles": ["source/client/*", "source/server/*"]
+	   	},
+	   	{
+	    	"name": "client",
+	        "description": "Game client, that is built with rendering subsystem, but also is able to handle server functions.",
+	        "targetType": "executable",
+	        "targetName": "drossy-starts-client",
+	        "mainSourceFile": "source/client/main.d",
+	        "excludedSourceFiles": ["source/server/*"]
+	    },
+	    {
+            "name": "server",
+            "description": "Game server, that is built without rendering subsystem.",
+            "targetType": "executable",
+            "targetName": "drossy-starts-server",
+            "mainSourceFile": "source/server/main.d",
+            "excludedSourceFiles": ["source/client/*"]
+	    }
 	]
 }

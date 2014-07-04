@@ -1,0 +1,10 @@
+{
+	"name" : "ds-example-io",
+	"copyright": "© 2014 Anton Gushcha",
+	"description" : "Demostrates input/output system of the engine.",
+	"license": "GPL-3.0",
+	"authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>"],
+	"dependencies" : {
+		"drossy-stars": {"version": "~master", "path": "../.."}  
+	}
+}

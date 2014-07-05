@@ -22,13 +22,14 @@
 */
 module render.renderer;
 
+import std.range;
+import std.traits;
+import std.typecons;
+import std.typetuple;
+
 import render.driver;
 import render.window;
 import util.cinterface;
-import std.traits;
-import std.range;
-import std.typecons;
-import std.typetuple;
 
 /**
 *   Compile-time interface describing rendering subsystem.

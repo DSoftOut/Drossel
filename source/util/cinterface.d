@@ -22,8 +22,9 @@
 */
 module util.cinterface;
 
-import std.typetuple;
 import std.traits;
+import std.typetuple;
+
 import util.functional;
 
 /// UDA if you don't want to match element in interface

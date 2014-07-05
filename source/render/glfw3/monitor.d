@@ -22,8 +22,8 @@
 */
 module render.glfw3.monitor;
 
-import render.monitor;
-import render.mode;
+import std.exception;
+
 import derelict.glfw3.glfw3 : 
     glfwGetVideoModes,
     glfwGetMonitorPos,
@@ -31,10 +31,11 @@ import derelict.glfw3.glfw3 :
     glfwGetMonitorName,
     _GLFWMonitor = GLFWmonitor;
 
-import util.vec;
+import render.mode;
+import render.monitor;
 import util.log;
 import util.string;
-import std.exception;
+import util.vec;
 
 /// Wrapper around GLFW3 monitor.
 struct GLFWMonitor

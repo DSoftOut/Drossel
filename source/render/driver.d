@@ -22,11 +22,12 @@
 */
 module render.driver;
 
+import std.traits;
+import std.range;
+
 import render.monitor;
 import util.cinterface;
 import util.vec;
-import std.traits;
-import std.range;
 
 /**
 *   Compile time interface

@@ -22,17 +22,18 @@
 */
 module render.polygonal;
 
-import render.renderer;
+import std.algorithm;
+import std.container;
+import std.conv;
+import std.range;
+import std.typecons;
+import std.typetuple;
+
 import render.driver;
+import render.renderer;
 import render.window;
 import util.cinterface;
 import util.log;
-import std.algorithm;
-import std.conv;
-import std.container;
-import std.typetuple;
-import std.typecons;
-import std.range;
 
 /**
 *   Renderer for polygonal graphics.

@@ -24,18 +24,18 @@
 */
 module client.main;
 
+import std.stdio;
+
+import client.settings;
 import render.polygonal;
+import render.color;
 import render.glfw3.opengl3;
 import render.glfw3.window;
-import render.input.mouse;
-import render.input.mods;
 import render.input.keyboard;
-import render.color;
-import client.settings;
+import render.input.mods;
+import render.input.mouse;
 import util.log;
 import util.vec;
-import util.functional;
-import std.stdio;
 
 alias Renderer = PolygonalRenderer!(GLFW3OpenGL3Driver, GLFWWindow);
  

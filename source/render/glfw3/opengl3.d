@@ -22,16 +22,10 @@
 */
 module render.glfw3.opengl3;
 
-import render.glfw3.monitor;
-import render.driver;
-import render.color;
-import util.cinterface;
-import util.log;
-import std.exception;
 import std.container;
+import std.exception;
 import std.range;
 
-import derelict.opengl3.gl3;
 import derelict.glfw3.glfw3 :
     DerelictGLFW3,
     glfwInit,
@@ -39,6 +33,13 @@ import derelict.glfw3.glfw3 :
     glfwGetMonitors,
     glfwGetPrimaryMonitor,
     _GLFWmonitor = GLFWmonitor;
+import derelict.opengl3.gl3;
+
+import render.color;
+import render.driver;
+import render.glfw3.monitor;
+import util.cinterface;
+import util.log;
 
 class GLFW3OpenGL3Driver
 {

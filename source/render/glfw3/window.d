@@ -22,21 +22,22 @@
 */
 module render.glfw3.window;
 
+import std.exception;
+import std.functional;
+import std.string;
+
+import derelict.glfw3.glfw3;
+
 public import render.window;
 
-import render.input.keyboard;
-import render.input.mouse;
-import render.input.mods;
 import render.color;
-import render.glfw3.opengl3;
+import render.input.keyboard;
+import render.input.mods;
+import render.input.mouse;
 import render.glfw3.monitor;
-
+import render.glfw3.opengl3;
 import util.log;
 import util.vec;
-import derelict.glfw3.glfw3;
-import std.exception;
-import std.string;
-import std.functional;
 
 class GLFWWindow
 {

@@ -24,8 +24,8 @@
 */
 module util.functional;
 
-import std.typetuple;
 import std.traits;
+import std.typetuple;
 
 /**
 *   Simple expression list wrapper.

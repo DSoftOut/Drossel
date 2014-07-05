@@ -22,14 +22,15 @@
 */
 module render.window;
 
-import render.monitor;
+import std.traits;
+
 import render.input.keyboard;
-import render.input.mouse;
 import render.input.mods;
-import util.vec;
+import render.input.mouse;
+import render.monitor;
 import util.cinterface;
 import util.functional;
-import std.traits;
+import util.vec;
 
 /// Window compile-time interface
 struct CIWindow

@@ -24,8 +24,8 @@
 */
 module util.vec;
 
-import std.traits;
 import std.conv;
+import std.traits;
 
 /// Alias for vector of 2 elements
 alias vec2(T) = Vector!(T, 2);

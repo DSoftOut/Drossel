@@ -22,10 +22,12 @@
 */
 module render.buffer.buffer;
 
-import derelict.opengl3.gl3;
-import util.cinterface;
 import std.traits;
 import std.range;
+
+import derelict.opengl3.gl3;
+
+import util.cinterface;
 
 /// Describes buffer data updating strategy
 enum BufferType
@@ -161,9 +163,11 @@ template isBuffer(T)
 */
 mixin template genDynamicBuffer(ElementType, BufferType btype)
 {
-	import derelict.opengl3.gl3;
-	import render.buffer.buffer;
 	import std.bitmanip;
+
+	import derelict.opengl3.gl3;
+	
+	import render.buffer.buffer;
 	
 	/// Stored element of data
 	alias Element = ElementType;

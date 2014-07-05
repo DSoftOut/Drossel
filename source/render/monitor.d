@@ -22,11 +22,12 @@
 */
 module render.monitor;
 
+import std.range;
+import std.traits;
+
 import render.mode;
 import util.cinterface;
 import util.vec;
-import std.range;
-import std.traits;
 
 struct CIMonitor
 {

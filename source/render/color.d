@@ -22,9 +22,10 @@
 */
 module render.color;
 
-import util.vec;
-import util.cinterface;
 import std.traits;
+
+import util.cinterface;
+import util.vec;
 
 /// Compile time interface for colors
 struct CIColor

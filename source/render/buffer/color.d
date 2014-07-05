@@ -22,8 +22,8 @@
 */
 module render.buffer.color;
 
-import render.buffer.buffer;
 import render.color;
+import render.buffer.buffer;
 import util.vec;
 
 /// Buffer that stores GPU colors

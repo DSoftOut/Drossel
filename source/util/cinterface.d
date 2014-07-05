@@ -53,10 +53,17 @@ template isExpose(Type, Interfaces...)
         alias intTypes = StrictList!(staticReplicate!(Interface, intMembers.expand.length)); 
         alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers)); 
     
-        private template filterTrasient(string name)
+        private template filterTrasient(string name) // and aliases
         {
-            enum filterTrasient 
-                = staticIndexOf!(trasient, __traits(getAttributes, __traits(getMember, Interface, name))) == -1;
+        	static if(is(typeof(__traits(getMember, Interface, name))))
+        	{
+        		enum filterTrasient 
+        			= staticIndexOf!(trasient, __traits(getAttributes, __traits(getMember, Interface, name))) == -1;
+			}
+        	else
+        	{
+        		enum filterTrasient = false;
+        	}
         }
         
         private template bindType(Base, string T) // also expanding overloads

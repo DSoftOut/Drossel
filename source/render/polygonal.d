@@ -129,7 +129,7 @@ class PolygonalRenderer(Driver, Windows...)
     Windows[0] createWindow(Behavior, Args...)(Args args)
         if( isWindowBehavior!Behavior)
     {
-        auto window = Windows[0].create!Behavior(args);
+        auto window = Windows[0].create!Behavior(driver, args);
         _windows[0].insert(window);
         
         return window;
@@ -174,9 +174,15 @@ class PolygonalRenderer(Driver, Windows...)
             {
                 foreach(ref window; winList[])
                 {
+                	// Rendering to the window
+                	window.makeContextCurrent();
+                	driver.draw();
                     window.swapBuffers();
+                    
+                    // Calling io callbacks
                     window.pollEvents();
                     
+                    // If needed removing window
                     if(window.shouldClose)
                     {
                         auto findRes = winList[].find!((e) => e == window);

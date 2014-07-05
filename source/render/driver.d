@@ -54,7 +54,7 @@ struct CIDriver
     /// Drawing scene to current context
     void draw();
     
-    /// Setting scene background color to $(B c).
+    /// Setting scene background color to $(B c) for current context.
     @trasient
 	void backgroundColor(Color)(Color c)
 		if(isColor!Color);

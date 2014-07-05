@@ -30,6 +30,7 @@ import render.glfw3.window;
 import render.input.mouse;
 import render.input.mods;
 import render.input.keyboard;
+import render.color;
 import client.settings;
 import util.log;
 import util.vec;
@@ -99,6 +100,7 @@ int main(string[] args)
     }
     
     auto mainWindow = renderer.createWindow!MainWindowBehavior(vec2!uint(600, 800), "Test window!");
+    mainWindow.backgroundColor = RGB(1.0f, 0.0f, 0.0f);
     
     renderer.startEventListening;
     return 0;

@@ -71,13 +71,19 @@ template isColor(T)
 }
 
 /// Color with red green and blue components
-struct RGBColor
+struct RGB
 {
 	/// Components count
 	enum size_t length = 3;
 	
 	/// Color components
 	float[length] components = [0.0f, 0.0f, 0.0f];
+	
+	/// Creating from components
+	this(float[length] args...)
+	{
+		components = args;
+	}
 	
 	/// Red component
 	float r() const
@@ -133,16 +139,22 @@ struct RGBColor
 		return vec4!float([r, g, b, 0.0f]);
 	}
 }
-static assert(isColor!RGBColor);
+static assert(isColor!RGB);
 
 /// Color with red green blue and alpha components
-struct RGBAColor
+struct RGBA
 {
 	/// Components count
 	enum size_t length = 4;
 	
 	/// Color components
 	float[length] components = [0.0f, 0.0f, 0.0f, 0.0f];
+	
+	/// Creating from components
+	this(float[length] args...)
+	{
+		components = args;
+	}
 	
 	/// Red component
 	float r() const
@@ -210,5 +222,5 @@ struct RGBAColor
 		return vec4!float(components);
 	}
 }
-static assert(isColor!RGBAColor);
+static assert(isColor!RGBA);
 

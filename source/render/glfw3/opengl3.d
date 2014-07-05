@@ -130,10 +130,12 @@ class GLFW3OpenGL3Driver
     /// Drawing scene to current context
     void draw()
     {
-    	
+    	// Clear the screen
+		glClear( GL_COLOR_BUFFER_BIT );
     }
     
-    /// Setting scene background color to $(B c).
+    /// Setting scene background color to $(B rc) for current context.
+    @trasient
 	void backgroundColor(Color)(Color rc)
 		if(isColor!Color)
 	{

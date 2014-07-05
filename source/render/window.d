@@ -110,6 +110,14 @@ struct CIWindow
     
     /// Called by renderer when the window order comes to be checked
     void swapBuffers();
+    
+    /// Should be called before rendering to the window
+    void makeContextCurrent();
+    
+    /// Setting scene background color to $(B c).
+    @trasient
+	void backgroundColor(Color)(Color c)
+		if(isColor!Color);
 }
 
 /// Checking is $(B T) is a window
@@ -235,7 +243,7 @@ struct CIWindowBehavior
     /// Specifies the desired number of auxiliary buffers
     enum size_t auxBuffers = 0;
     /// Specifies the desired number of samples to use for multisampling. Zero disables multisampling.
-    enum size_t samples = 0;
+    enum size_t samples = 4;
     /// Specifies the desired refresh rate for full screen windows. If set to zero, the highest available refresh rate will be used.
     enum uint refreshRate = 0;
     
@@ -392,7 +400,7 @@ mixin template addDefaultWindowBehavior(alias W, Members...)
     static if(!hasSymbol!"samples")
     {
         /// Specifies the desired number of samples to use for multisampling. Zero disables multisampling.
-        enum size_t samples = 0;
+        enum size_t samples = 4;
     }
     static if(!hasSymbol!"refreshRate")
     {

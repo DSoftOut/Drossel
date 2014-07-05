@@ -27,8 +27,10 @@ public import render.window;
 import render.input.keyboard;
 import render.input.mouse;
 import render.input.mods;
-
+import render.color;
+import render.glfw3.opengl3;
 import render.glfw3.monitor;
+
 import util.log;
 import util.vec;
 import derelict.glfw3.glfw3;
@@ -43,64 +45,64 @@ class GLFWWindow
     
     // Constructors for compile-time hints and callbacks
     /// Creating windowed window
-    static GLFWWindow create(Behavior)(vec2!uint size, string title)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, vec2!uint size, string title)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(Behavior(), size, title);
+        return new GLFWWindow(driver, Behavior(), size, title);
     }
     
     /// Creating fullscreen window
-    static GLFWWindow create(Behavior)(vec2!uint size, string title, GLFWMonitor monitor)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, vec2!uint size, string title, GLFWMonitor monitor)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(Behavior(), size, title, monitor);
+        return new GLFWWindow(driver, Behavior(), size, title, monitor);
     }
     
     /// Creating windowed window with shared context
-    static GLFWWindow create(Behavior)(vec2!uint size, string title, GLFWWindow share)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, vec2!uint size, string title, GLFWWindow share)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(Behavior(), size, title, share);
+        return new GLFWWindow(driver, Behavior(), size, title, share);
     }
     
     /// Creating fullscreen window with shared context
-    static GLFWWindow create(Behavior)(vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(Behavior(), size, title, monitor, share);
+        return new GLFWWindow(driver, Behavior(), size, title, monitor, share);
     }
     
     /// Creating windowed window
-    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, Behavior behavior, vec2!uint size, string title)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(behavior, size, title);
+        return new GLFWWindow(driver, behavior, size, title);
     }
     
     /// Creating fullscreen window
-    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title, GLFWMonitor monitor)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, Behavior behavior, vec2!uint size, string title, GLFWMonitor monitor)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(behavior, size, title, monitor);
+        return new GLFWWindow(driver, behavior, size, title, monitor);
     }
     
     /// Creating windowed window with shared context
-    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title, GLFWWindow share)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, Behavior behavior, vec2!uint size, string title, GLFWWindow share)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(behavior, size, title, share);
+        return new GLFWWindow(driver, behavior, size, title, share);
     }
     
     /// Creating fullscreen window with shared context
-    static GLFWWindow create(Behavior)(Behavior behavior, vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
+    static GLFWWindow create(Behavior)(GLFW3OpenGL3Driver driver, Behavior behavior, vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
         if(isWindowBehavior!Behavior)
     {
-        return new GLFWWindow(behavior, size, title, monitor, share);
+        return new GLFWWindow(driver, behavior, size, title, monitor, share);
     }
     
     // Constructors for run-time hints and callback changing
     /// Creating windowed window
-    this(B)(B behavior, vec2!uint size, string title)
+    this(B)(GLFW3OpenGL3Driver driver, B behavior, vec2!uint size, string title)
         if(isWindowBehavior!B)
     {
         setWindowHints(behavior);
@@ -109,10 +111,11 @@ class GLFWWindow
         bindCallbacks(behavior);
         
         callbacksMap[handle] = WindowDescr(this, behavior);
+        this.driver = driver;
     }
     
     /// Creating fullscreen window
-    this(B)(B behavior, vec2!uint size, string title, GLFWMonitor monitor)
+    this(B)(GLFW3OpenGL3Driver driver, B behavior, vec2!uint size, string title, GLFWMonitor monitor)
         if(isWindowBehavior!B)
     {
         setWindowHints(behavior);
@@ -121,10 +124,11 @@ class GLFWWindow
         bindCallbacks(behavior);
         
         callbacksMap[handle] = WindowDescr(this, behavior);
+        this.driver = driver;
     }
     
     /// Creating windowed window with shared context
-    this(B)(B behavior, vec2!uint size, string title, GLFWWindow share)
+    this(B)(GLFW3OpenGL3Driver driver, B behavior, vec2!uint size, string title, GLFWWindow share)
         if(isWindowBehavior!B)
     {
         setWindowHints(behavior);
@@ -133,10 +137,11 @@ class GLFWWindow
         bindCallbacks(behavior);
         
         callbacksMap[handle] = WindowDescr(this, behavior);
+        this.driver = driver;
     }
     
     /// Creating fullscreen window with shared context
-    this(B)(B behavior, vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
+    this(B)(GLFW3OpenGL3Driver driver, B behavior, vec2!uint size, string title, GLFWMonitor monitor, GLFWWindow share)
         if(isWindowBehavior!B)
     {
         setWindowHints(behavior);
@@ -146,6 +151,7 @@ class GLFWWindow
         bindCallbacks(behavior);
         
         callbacksMap[handle] = WindowDescr(this, behavior);
+        this.driver = driver;
     }
     
     /// Used to store hints setting statements
@@ -176,6 +182,10 @@ class GLFWWindow
             
             glfwWindowHint(GLFW_STEREO,       store.stereo);
             glfwWindowHint(GLFW_SRGB_CAPABLE, store.sRGBCapable);
+            
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         }
     }
     
@@ -472,6 +482,21 @@ class GLFWWindow
         glfwSwapBuffers(handle);
     }
     
+    /// Should be called before rendering to the window
+    void makeContextCurrent()
+    {
+    	glfwMakeContextCurrent(handle);
+    }
+    
+    /// Setting scene background color to $(B c).
+	void backgroundColor(Color)(Color c)
+		if(isColor!Color)
+	{
+		makeContextCurrent();
+		
+		driver.backgroundColor = c;
+	}
+	
     override bool opEquals(Object obj)
     {
         if(auto win = cast(GLFWWindow)obj)
@@ -485,6 +510,7 @@ class GLFWWindow
     }
     
     package GLFWwindow* handle;
+    private GLFW3OpenGL3Driver driver;
     
     private struct WindowDescr
     {

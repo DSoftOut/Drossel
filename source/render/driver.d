@@ -24,6 +24,7 @@ module render.driver;
 
 import render.monitor;
 import util.cinterface;
+import util.vec;
 import std.traits;
 import std.range;
 
@@ -49,6 +50,14 @@ struct CIDriver
     @trasient
     M monitor(M)() const
         if(isMonitor!M);
+        
+    /// Drawing scene to current context
+    void draw();
+    
+    /// Setting scene background color to $(B c).
+    @trasient
+	void backgroundColor(Color)(Color c)
+		if(isColor!Color);
 }
 
 /// Test if $(B T) is actual a driver

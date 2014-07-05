@@ -24,6 +24,7 @@ module render.glfw3.opengl3;
 
 import render.glfw3.monitor;
 import render.driver;
+import render.color;
 import util.cinterface;
 import util.log;
 import std.exception;
@@ -125,4 +126,18 @@ class GLFW3OpenGL3Driver
         
         return GLFWMonitor(ptr);
     }
+    
+    /// Drawing scene to current context
+    void draw()
+    {
+    	
+    }
+    
+    /// Setting scene background color to $(B c).
+	void backgroundColor(Color)(Color rc)
+		if(isColor!Color)
+	{
+		auto c = rc.toGLRGBA;
+		glClearColor(c.x, c.y, c.z, c.w);
+	}
 }

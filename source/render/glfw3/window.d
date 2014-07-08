@@ -213,98 +213,163 @@ class GLFWWindow
         {
             void positionCallback(GLFWwindow* handle, int x, int y)
             {
-                scope(failure) {}
-                if(auto descr = handle in callbacksMap)
-                    descr.positionCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+            	if(auto descr = handle in callbacksMap)
+                {
+	                try descr.positionCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+                	}
+            	} 
             }
     
             void sizeCallback(GLFWwindow* handle, int x, int y)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.sizeCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+                {
+	                try descr.sizeCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+                	}
+            	} 
             }
             
             void closeCallback(GLFWwindow* handle)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.closeCallback(descr.window);
+                {
+	                try descr.closeCallback(descr.window);
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                }
+            	} 
             }
             
             void refreshCallback(GLFWwindow* handle)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.refreshCallback(descr.window);
+                {
+	                try descr.refreshCallback(descr.window);
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                }
+            	} 
             }
             
             void focusCallback(GLFWwindow* handle, int flag)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.focusCallback(descr.window, cast(bool)flag);
+                {
+	                try descr.focusCallback(descr.window, cast(bool)flag);
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                }
+            	} 
             }
             
             void iconifyCallback(GLFWwindow* handle, int flag)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.iconifyCallback(descr.window, cast(bool)flag);
+                {
+                	try descr.iconifyCallback(descr.window, cast(bool)flag);
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                }
+                }
             }
             
             void framebufferSizeCallback(GLFWwindow* handle, int x, int y)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.framebufferSizeCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+                {
+	                try descr.framebufferSizeCallback(descr.window, vec2!uint(cast(uint)x, cast(uint)y));
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                } 
+            	} 
             }
             
             void mouseButtonCallback(GLFWwindow* handle, int button, int action, int mods)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.mouseButtonCallback(descr.window
-                        , cast(MouseButton)button, cast(MouseButtonAction)action
-                        , Modificators.fromBitfield(mods));
+                {
+	                try descr.mouseButtonCallback(descr.window
+	                        , cast(MouseButton)button, cast(MouseButtonAction)action
+	                        , Modificators.fromBitfield(mods));
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                } 
+                } 
             }
             
             void cursorPosCallback(GLFWwindow* handle, double xpos, double ypos)
             {
-                scope(failure) {} 
                 if(auto descr = handle in callbacksMap) 
-                    descr.cursorPosCallback(descr.window, vec2!double(xpos, ypos) / descr.window.size);
+                {
+	                try descr.cursorPosCallback(descr.window, vec2!double(xpos, ypos) / descr.window.size);
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                } 
+                } 
             }
             
             void cursorEnterCallback(GLFWwindow* handle, int flag)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.cursorEnterCallback(descr.window, cast(bool)flag);
+                {
+	                try descr.cursorEnterCallback(descr.window, cast(bool)flag);
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                } 
+                } 
             }
             
             void scrollCallback(GLFWwindow* handle, double xoffset, double yoffset)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.scrollCallback(descr.window, vec2!double(xoffset, yoffset));
+                {
+	                try descr.scrollCallback(descr.window, vec2!double(xoffset, yoffset));
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                } 
+                } 
             }
             
             void keyCallback(GLFWwindow* handle, int key, int scancode, int action, int mods)
             {
-                scope(failure) {}
                 if(auto descr = handle in callbacksMap)
-                    descr.keyCallback(descr.window
-                        , cast(KeyboardKey)key, cast(uint)scancode
-                        , cast(KeyboardKeyAction)action
-                        , Modificators.fromBitfield(mods));
+                {
+	                try descr.keyCallback(descr.window
+	                    , cast(KeyboardKey)key, cast(uint)scancode
+	                    , cast(KeyboardKeyAction)action
+	                    , Modificators.fromBitfield(mods));
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                }
+                } 
             }
             
             void charCallback(GLFWwindow* handle, uint codepoint)
             {
-                scope(failure) {}
-                if(auto descr = handle in callbacksMap)
-                    descr.charCallback(descr.window, cast(dchar)codepoint);
+	            if(auto descr = handle in callbacksMap)
+	            {
+	                try descr.charCallback(descr.window, cast(dchar)codepoint);
+	                catch(Throwable th)
+	                {
+	                	descr.rethrow = new CallbackThrowable( th, descr.rethrow );
+	                }
+                } 
             }
         }
         
@@ -475,6 +540,21 @@ class GLFWWindow
     void pollEvents()
     {
         glfwPollEvents();
+        
+        // Rethrowing exceptions
+        auto winDescr = handle in callbacksMap;
+        assert(winDescr);
+        if(winDescr.rethrow !is null)
+        {
+        	for(auto ct = winDescr.rethrow; ct !is null; ct = ct.nextCT)
+        	{
+        		ct.throwWrappedError();
+        	}
+        	
+        	auto t = winDescr.rethrow;
+        	winDescr.rethrow = null;
+        	throw t;
+        }
     }
     
     /// Called by renderer when the window order comes to be checked
@@ -513,6 +593,26 @@ class GLFWWindow
     package GLFWwindow* handle;
     private GLFW3OpenGL3Driver driver;
     
+    private static class CallbackThrowable : Throwable 
+    {
+    	CallbackThrowable nextCT;
+    	
+    	this(Throwable payload, CallbackThrowable t,
+    		string file = __FILE__, size_t line = __LINE__) nothrow pure @safe
+    	{
+    		super("An exception was thrown from a C callback.", file, line, payload);
+    		nextCT = t;
+    	}
+    	
+    	void throwWrappedError()
+    	{
+    		if( cast(Exception)next is null )
+    		{
+    			throw next;
+    		}
+    	}
+    }
+    
     private struct WindowDescr
     {
         GLFWWindow window;
@@ -532,6 +632,8 @@ class GLFWWindow
         void delegate(GLFWWindow, KeyboardKey, uint, KeyboardKeyAction, Modificators)
             keyCallback;
         void delegate(GLFWWindow, dchar) charCallback;
+        
+        CallbackThrowable rethrow;
         
         this(B)(GLFWWindow window, B behavior)
             if(isWindowBehavior!B)

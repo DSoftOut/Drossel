@@ -136,11 +136,33 @@ class GLFW3OpenGL3Driver
     }
     
     /// Setting scene background color to $(B rc) for current context.
-    @trasient
 	void backgroundColor(Color)(Color rc)
 		if(isColor!Color)
 	{
 		auto c = rc.toGLRGBA;
 		glClearColor(c.x, c.y, c.z, c.w);
+	}
+	
+	/// Enables or disables depth buffer
+	void setDepthTest(bool flag)
+	{
+		if(flag) glEnable(GL_DEPTH_TEST);
+		else glDisable(GL_DEPTH_TEST);
+	}
+	
+	/// Sets comparison function for depth test
+	void depthFunc(DepthFunc func)
+	{
+		final switch(func)
+		{
+			case DepthFunc.Never:        glDepthFunc(GL_NEVER);    break;
+			case DepthFunc.Less:         glDepthFunc(GL_LESS);     break;
+			case DepthFunc.Equal:        glDepthFunc(GL_EQUAL);    break;
+			case DepthFunc.LessEqual:    glDepthFunc(GL_LEQUAL);   break;
+			case DepthFunc.Greater:      glDepthFunc(GL_GREATER);  break;
+			case DepthFunc.NotEqual:     glDepthFunc(GL_NOTEQUAL); break;
+			case DepthFunc.GreaterEqual: glDepthFunc(GL_GEQUAL);   break;
+			case DepthFunc.Always:       glDepthFunc(GL_ALWAYS);   break;
+		}
 	}
 }

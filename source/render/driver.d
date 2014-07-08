@@ -29,6 +29,19 @@ import render.monitor;
 import util.cinterface;
 import util.vec;
 
+/// Comparison function for depth buffer
+enum DepthFunc
+{
+	Never,
+	Less,
+	Equal,
+	LessEqual,
+	Greater,
+	NotEqual,
+	GreaterEqual,
+	Always
+}
+
 /**
 *   Compile time interface
 */
@@ -59,6 +72,12 @@ struct CIDriver
     @trasient
 	void backgroundColor(Color)(Color c)
 		if(isColor!Color);
+	
+	/// Enables or disables depth buffer
+	void setDepthTest(bool flag);
+	
+	/// Sets comparison function for depth test
+	void depthFunc(DepthFunc func);
 }
 
 /// Test if $(B T) is actual a driver

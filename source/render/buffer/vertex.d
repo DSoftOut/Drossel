@@ -23,7 +23,7 @@
 module render.buffer.vertex;
 
 import render.buffer.buffer;
-import util.vec;
+import math.vec;
 
 /// Buffer that stores GPU vertices
 struct VertexBuffer(BufferType btype)

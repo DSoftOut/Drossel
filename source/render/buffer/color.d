@@ -24,7 +24,7 @@ module render.buffer.color;
 
 import render.color;
 import render.buffer.buffer;
-import util.vec;
+import math.vec;
 
 /// Buffer that stores GPU colors
 struct ColorBuffer(Color, BufferType btype)

@@ -37,7 +37,7 @@ import render.input.mouse;
 import render.glfw3.monitor;
 import render.glfw3.opengl3;
 import util.log;
-import util.vec;
+import math.vec;
 
 class GLFWWindow
 {

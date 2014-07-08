@@ -32,7 +32,7 @@ import render.input.mods;
 import render.input.keyboard;
 import client.settings;
 import util.log;
-import util.vec;
+import math.vec;
 import util.functional;
 import std.stdio;
 

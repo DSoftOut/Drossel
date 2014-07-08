@@ -22,7 +22,7 @@
 */
 module render.mode;
 
-import util.vec;
+import math.vec;
 
 struct VideoMode
 {

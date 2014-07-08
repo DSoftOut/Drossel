@@ -22,7 +22,7 @@
 *
 *   Template for fixed size vector, also used to operate in math functions.
 */
-module util.vec;
+module math.vec;
 
 import std.conv;
 import std.traits;

@@ -27,7 +27,7 @@ import std.range;
 
 import render.monitor;
 import util.cinterface;
-import util.vec;
+import math.vec;
 
 /// Comparison function for depth buffer
 enum DepthFunc

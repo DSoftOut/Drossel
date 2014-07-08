@@ -30,7 +30,7 @@ import render.input.mouse;
 import render.monitor;
 import util.cinterface;
 import util.functional;
-import util.vec;
+import math.vec;
 
 /// Window compile-time interface
 struct CIWindow

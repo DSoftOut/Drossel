@@ -35,7 +35,7 @@ import render.mode;
 import render.monitor;
 import util.log;
 import util.string;
-import util.vec;
+import math.vec;
 
 /// Wrapper around GLFW3 monitor.
 struct GLFWMonitor

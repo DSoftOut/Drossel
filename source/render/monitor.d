@@ -27,7 +27,7 @@ import std.traits;
 
 import render.mode;
 import util.cinterface;
-import util.vec;
+import math.vec;
 
 struct CIMonitor
 {

@@ -23,7 +23,7 @@
 module render.buffer.normal;
 
 import render.buffer.buffer;
-import util.vec;
+import math.vec;
 
 /// Buffer that stores GPU normals
 struct NormalBuffer(BufferType btype)

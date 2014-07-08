@@ -25,7 +25,7 @@ module render.color;
 import std.traits;
 
 import util.cinterface;
-import util.vec;
+import math.vec;
 
 /// Compile time interface for colors
 struct CIColor

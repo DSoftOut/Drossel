@@ -35,7 +35,7 @@ import render.input.keyboard;
 import render.input.mods;
 import render.input.mouse;
 import util.log;
-import util.vec;
+import math.vec;
 
 alias Renderer = PolygonalRenderer!(GLFW3OpenGL3Driver, GLFWWindow);
  

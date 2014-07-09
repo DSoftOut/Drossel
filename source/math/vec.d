@@ -26,7 +26,10 @@ module math.vec;
 
 import std.conv;
 import std.traits;
+import util.functional;
 
+/// Alias for vector of 1 elements
+alias vec1(T) = Vector!(T, 1);
 /// Alias for vector of 2 elements
 alias vec2(T) = Vector!(T, 2);
 /// Alias for vector of 3 elements
@@ -99,6 +102,7 @@ struct Vector(Element, size_t n)
         sink(")");
     }
     
+    /// Operators for per-element operations
     auto opBinary(string op, OtherElement)(Vector!(OtherElement, n) vec)
         if((op == "-" || op == "+" || op == "/" || op == "*") &&
             __traits(compiles, Element.init / OtherElement.init))
@@ -111,4 +115,135 @@ struct Vector(Element, size_t n)
             
         return Vector!(NewElement, n)(buff);
     }
-} 
+    
+    /// Indexing vector
+    Element opIndex(size_t i)
+    {
+        assert(i < n, text("Overload opIndex ", i, " >= ", n));
+        return elements[i];
+    }
+    
+    /// Indexing vector
+    const(Element) opIndex(size_t i) const
+    {
+        assert(i < n, text("Overload opIndex ", i, " >= ", n));
+        return elements[i];
+    }
+    
+    /// Assign specific component
+    ref Vector!(Element, n) opIndexAssign(Element e, size_t i)
+    {
+        assert(i < n, text("Overload opIndexAssign ", i, " >= ", n));
+        elements[i] = e;
+        return this;
+    }
+    
+    /// Is some char is a vector component name
+    private template isElement(char c)
+    {
+        static if(n == 0) {
+            enum isElement = false;
+        }
+        else static if(n == 1) {
+            enum isElement = c == 'x';
+        } 
+        else static if(n == 2) {
+            enum isElement = c == 'x' || c == 'y';
+        }
+        else static if(n == 3) {
+            enum isElement = c == 'x' || c == 'y' || c == 'z';
+        }
+        else static if(n >= 4) {
+            enum isElement = c == 'x' || c == 'y' || c == 'z' || c == 'w';
+        }
+    }
+    
+    private template isConstant(char c)
+    {
+        enum isConstant = c >= '0' && c <= '9';
+    }
+
+    private template allElementsOrConstants(string s)
+    {
+        
+        private template or(alias A, alias B)
+        {
+            template inner(char c)
+            {
+                enum inner = A!(c) || B!(c);
+            }
+            
+            alias or = inner;
+        }
+        
+        private template allSatisfyString(alias F, string s)
+        {
+            static if(s.length == 0) {
+                enum allSatisfyString = true;
+            } else {
+                enum allSatisfyString = F!(s[0]) && allSatisfyString!(F, s[1 .. $]);
+            }
+        }
+        
+        enum allElementsOrConstants = allSatisfyString!(or!(isElement, isConstant), s);
+    }
+    
+    /// Comparing vectors with equal sizes
+    bool opEquals(OtherElement)(auto ref const Vector!(OtherElement, n) vec) const 
+        if(__traits(compiles, Element.init == OtherElement.init))
+    {
+        bool res = true;
+        foreach(i; 0 .. n)
+        {
+            res = res && this[i] == vec[i];
+        }
+        return res;
+    }
+    
+    /**
+    *   Generates new vector from pattern $(B op).
+    *
+    *   Each char of $(B op) is a name of component of old vector
+    *   or a constant (0 to 9, one char).
+    *
+    *   Example:
+    *   ----------
+    *   auto vec = vec4!int(1, 2, 3, 4);
+    *
+    *   assert(vec.x1 == vec2!int(1, 1));
+    *   assert(vec.x0 == vec2!int(1, 0));
+    *   assert(vec.xy == vec2!int(1, 2));
+    *   assert(vec.yx == vec2!int(2, 1));
+    *   assert(vec.xy0z == vec4!int(1, 2, 0, 3));
+    *   assert(vec.xyzw == vec4!int(1, 2, 3, 4));
+    *   ----------
+    */
+    auto opDispatch(string op)()
+        if(allElementsOrConstants!op)
+    {
+        enum newn = op.length;
+        Vector!(Element, newn) newvec;
+        
+        foreach(i; Iota!newn)
+        {
+            enum c = op[i];
+            static if(isElement!c)
+                newvec[i] = mixin("this." ~ c);
+            else static if(isConstant!c)
+                 newvec[i] = [c].to!Element;
+        }
+        
+        return newvec;
+    }
+}
+unittest
+{
+    auto vec = vec4!int(1, 2, 3, 4);
+    assert(vec.opDispatch!"x1" == vec2!int(1, 1));
+    assert(vec.x1 == vec2!int(1, 1));
+    assert(vec.x0 == vec2!int(1, 0));
+    assert(vec.xy == vec2!int(1, 2));
+    assert(vec.yx == vec2!int(2, 1));
+    assert(vec.xy0z == vec4!int(1, 2, 0, 3));
+    assert(vec.xyzw == vec4!int(1, 2, 3, 4));
+}

@@ -193,7 +193,7 @@ struct Vector(Element, size_t n)
         if(__traits(compiles, Element.init == OtherElement.init))
     {
         bool res = true;
-        foreach(i; 0 .. n)
+        foreach(i; Iota!n)
         {
             res = res && this[i] == vec[i];
         }

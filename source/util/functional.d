@@ -573,3 +573,25 @@ unittest { // Tests of Iota!()
 
     static assert(!is(typeof( Iota!(15, 3, 0) ))); // stride = 0 statically asserts
 } // End tests of Iota!()
+
+/// Checks if $(B T1) and $(B T2) have an operator $(B op): T1 op T2
+template hasOp(T1, T2, string op)
+{
+    enum hasOp = __traits(compiles, mixin("T1.init" ~ op ~ "T2.init"));
+}
+///
+unittest
+{
+    static assert(hasOp!(float, int, "*"));
+    static assert(hasOp!(double, double, "/"));
+    static assert(!hasOp!(double, void, "/"));
+    
+    struct B {}
+    
+    struct A
+    {
+        void opBinary(string op)(B b) if(op == "*") {}
+    }
+    
+    static assert(hasOp!(A, B, "*"));
+}

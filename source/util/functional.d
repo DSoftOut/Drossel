@@ -577,7 +577,13 @@ unittest { // Tests of Iota!()
 /// Checks if $(B T1) and $(B T2) have an operator $(B op): T1 op T2
 template hasOp(T1, T2, string op)
 {
-    enum hasOp = __traits(compiles, mixin("T1.init" ~ op ~ "T2.init"));
+    static if(isIntegral!T1 && isIntegral!T2 && op == "/")
+    {
+        enum hasOp = true; // to not fall into 0 divizion
+    } else
+    {
+        enum hasOp = __traits(compiles, mixin("T1.init" ~ op ~ "T2.init"));
+    }
 }
 ///
 unittest
@@ -585,6 +591,7 @@ unittest
     static assert(hasOp!(float, int, "*"));
     static assert(hasOp!(double, double, "/"));
     static assert(!hasOp!(double, void, "/"));
+    static assert(hasOp!(int, int, "/"));
     
     struct B {}
     

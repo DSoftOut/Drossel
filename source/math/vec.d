@@ -49,41 +49,61 @@ alias vec7(T) = Vector!(T, 7);
 */
 struct Vector(Element, size_t n)
 {
+    alias ThisVector = Vector!(Element, n);
+    
     /// Piece of memory wher elements are stored
     Element[n] elements;
     
+    /// Creating vector filled with a value
+    this(Element fillElem) pure nothrow @safe
+    {
+        elements[] = fillElem;
+    }
+    
     /// Creating from passed arguments
-    this(Element[n] args ...)
+    this(Element[n] args ...) pure nothrow @safe
     {
         elements = args;
+    }
+    
+    /// Returns vector filled with zeros
+    static ThisVector zeros() pure nothrow @safe
+    {
+        return ThisVector(cast(Element)0);
+    }
+    
+    /// Returns vector filled with ones
+    static ThisVector ones() pure nothrow @safe
+    {
+        return ThisVector(cast(Element)1);
     }
     
     static if(n >= 1)
     {
         /// Returning first element
-        Element x() { return elements[0]; }
-        const(Element) x() const { return elements[0]; }
+        pure nothrow @safe Element x() { return elements[0]; }
+        pure nothrow @safe const(Element) x() const { return elements[0]; }
     }
     
     static if(n >= 2)
     {
         /// Returning second element
-        Element y() { return elements[1]; }
-        const(Element) y() const { return elements[1]; }
+        pure nothrow @safe Element y() { return elements[1]; }
+        pure nothrow @safe const(Element) y() const { return elements[1]; }
     }
     
     static if(n >= 3)
     {
         /// Returning third element
-        Element z() { return elements[2]; }
-        const(Element) z() const { return elements[2]; }
+        pure nothrow @safe Element z() { return elements[2]; }
+        pure nothrow @safe const(Element) z() const { return elements[2]; }
     }
     
     static if(n >= 4)
     {
         /// Returning fourth element
-        Element w() { return elements[3]; }
-        const(Element) w() const { return elements[3]; }
+        pure nothrow @safe Element w() { return elements[3]; }
+        pure nothrow @safe const(Element) w() const { return elements[3]; }
     }
     
     /// fastest variant
@@ -103,11 +123,10 @@ struct Vector(Element, size_t n)
     }
     
     /// Operators for per-element operations
-    auto opBinary(string op, OtherElement)(Vector!(OtherElement, n) vec)
-        if((op == "-" || op == "+" || op == "/" || op == "*") &&
-            __traits(compiles, Element.init / OtherElement.init))
+    auto opBinary(string op, OtherElement)(Vector!(OtherElement, n) vec) pure nothrow @safe
+        if(hasOp!(Element, OtherElement, op)) 
     {
-        alias NewElement = typeof(Element.init / OtherElement.init);
+        alias NewElement = typeof(mixin(`Element.init `~op~`OtherElement.init`));
         
         NewElement[n] buff;
         foreach(i, ref elem; buff)
@@ -116,25 +135,47 @@ struct Vector(Element, size_t n)
         return Vector!(NewElement, n)(buff);
     }
     
+    /// Operators with scalar
+    auto opBinary(string op, OtherElement)(OtherElement e) pure nothrow @safe
+        if(hasOp!(Element, OtherElement, op))
+    {
+        alias NewElement = typeof(mixin(`Element.init `~op~`OtherElement.init`));
+        
+        NewElement[n] buff;
+        foreach(i, ref elem; buff)
+            elem = mixin(`elements[i] `~op~`e`);
+            
+        return Vector!(NewElement, n)(buff);
+    }
+    
     /// Indexing vector
-    Element opIndex(size_t i)
+    Element opIndex(size_t i) pure nothrow @safe
     {
         assert(i < n, text("Overload opIndex ", i, " >= ", n));
         return elements[i];
     }
     
     /// Indexing vector
-    const(Element) opIndex(size_t i) const
+    const(Element) opIndex(size_t i) const pure nothrow @safe
     {
         assert(i < n, text("Overload opIndex ", i, " >= ", n));
         return elements[i];
     }
     
     /// Assign specific component
-    ref Vector!(Element, n) opIndexAssign(Element e, size_t i)
+    ref ThisVector opIndexAssign(Element e, size_t i) pure nothrow @safe
     {
         assert(i < n, text("Overload opIndexAssign ", i, " >= ", n));
         elements[i] = e;
+        return this;
+    }
+    
+    /// Assign specific component with $(B op)
+    ref ThisVector opIndexOpAssign(string op, OtherElement)(OtherElement e, size_t i) pure nothrow @safe
+        if(hasOp!(Element, OtherElement, op))
+    {
+        assert(i < n, text("Overload opIndexOpAssign ", i, " >= ", n));
+        mixin("elements[i] " ~ op ~ "= e;");
         return this;
     }
     
@@ -189,7 +230,7 @@ struct Vector(Element, size_t n)
     }
     
     /// Comparing vectors with equal sizes
-    bool opEquals(OtherElement)(auto ref const Vector!(OtherElement, n) vec) const 
+    bool opEquals(OtherElement)(auto ref const Vector!(OtherElement, n) vec) const pure nothrow @safe
         if(__traits(compiles, Element.init == OtherElement.init))
     {
         bool res = true;
@@ -199,7 +240,7 @@ struct Vector(Element, size_t n)
         }
         return res;
     }
-    
+
     /**
     *   Generates new vector from pattern $(B op).
     *
@@ -218,7 +259,7 @@ struct Vector(Element, size_t n)
     *   assert(vec.xyzw == vec4!int(1, 2, 3, 4));
     *   ----------
     */
-    auto opDispatch(string op)()
+    auto opDispatch(string op)() pure @safe
         if(allElementsOrConstants!op)
     {
         enum newn = op.length;

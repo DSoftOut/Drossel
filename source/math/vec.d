@@ -25,7 +25,11 @@
 module math.vec;
 
 import std.conv;
+import std.math;
 import std.traits;
+import std.range;
+
+import math.angle;
 import util.functional;
 
 /// Alias for vector of 1 elements
@@ -83,6 +87,12 @@ struct Vector(Element, size_t n)
         /// Returning first element
         pure nothrow @safe Element x() { return elements[0]; }
         pure nothrow @safe const(Element) x() const { return elements[0]; }
+        
+        pure nothrow @safe ref ThisVector x(Element val) 
+        {
+            elements[0] = val; 
+            return this; 
+        }
     }
     
     static if(n >= 2)
@@ -90,6 +100,12 @@ struct Vector(Element, size_t n)
         /// Returning second element
         pure nothrow @safe Element y() { return elements[1]; }
         pure nothrow @safe const(Element) y() const { return elements[1]; }
+        
+        pure nothrow @safe ref ThisVector y(Element val) 
+        {
+            elements[1] = val; 
+            return this; 
+        }
     }
     
     static if(n >= 3)
@@ -97,6 +113,12 @@ struct Vector(Element, size_t n)
         /// Returning third element
         pure nothrow @safe Element z() { return elements[2]; }
         pure nothrow @safe const(Element) z() const { return elements[2]; }
+        
+        pure nothrow @safe ref ThisVector z(Element val) 
+        {
+            elements[2] = val; 
+            return this; 
+        }
     }
     
     static if(n >= 4)
@@ -104,6 +126,12 @@ struct Vector(Element, size_t n)
         /// Returning fourth element
         pure nothrow @safe Element w() { return elements[3]; }
         pure nothrow @safe const(Element) w() const { return elements[3]; }
+        
+        pure nothrow @safe ref ThisVector w(Element val) 
+        {
+            elements[3] = val; 
+            return this; 
+        }
     }
     
     /// fastest variant
@@ -123,7 +151,7 @@ struct Vector(Element, size_t n)
     }
     
     /// Operators for per-element operations
-    auto opBinary(string op, OtherElement)(Vector!(OtherElement, n) vec) pure nothrow @safe
+    auto opBinary(string op, OtherElement)(Vector!(OtherElement, n) vec) pure const nothrow @safe
         if(hasOp!(Element, OtherElement, op)) 
     {
         alias NewElement = typeof(mixin(`Element.init `~op~`OtherElement.init`));
@@ -136,7 +164,7 @@ struct Vector(Element, size_t n)
     }
     
     /// Operators with scalar
-    auto opBinary(string op, OtherElement)(OtherElement e) pure nothrow @safe
+    auto opBinary(string op, OtherElement)(OtherElement e) pure const nothrow @safe
         if(hasOp!(Element, OtherElement, op))
     {
         alias NewElement = typeof(mixin(`Element.init `~op~`OtherElement.init`));
@@ -275,6 +303,95 @@ struct Vector(Element, size_t n)
         }
         
         return newvec;
+    }
+    
+    /// Returns squared length of the vector
+    Element length2() const nothrow pure @safe
+    {
+        Element acc = cast(Element)0;
+        foreach(i; Iota!n)
+        {
+            acc += elements[i]*elements[i];
+        }
+        return acc;
+    }
+    
+    /// Returns length of the vector
+    double length() const nothrow pure @safe
+    {
+        return sqrt(cast(double)length2);
+    }
+    
+    /// Returns normalized vector
+    ThisVector normalize() const nothrow pure @safe
+    {
+        return this / cast(Element)length;
+    }
+    
+    /// Normalizes the vector without creating a copy
+    ref ThisVector normalized() nothrow pure @safe
+    {
+        elements[] /= cast(Element)length;
+        return this;
+    }
+    
+    /// Casting to vector with different size
+    T opCast(T)() nothrow pure @safe
+        if(is(T : Vector!(Element, m), size_t m))
+    {
+        static if(m == n) return this;
+        else static if(m > n)
+        {
+            Element[m] buff;
+            buff[0 .. n] = elements[];
+            return Vector!(Element, m)(buff);
+        }
+        else
+        {
+            Element[m] buff = elements[0 .. m];
+            return Vector!(Element, m)(buff);
+        }
+    }
+    
+    /// Returns dot product of vectors
+    Element dot(OtherElement)(Vector!(OtherElement, n) vec) const nothrow pure @safe
+        if(hasOp!(Element, OtherElement, "*") && hasOp!(Element, OtherElement, "+"))
+    {
+        auto ret = cast(Element)0;
+        foreach(i; Iota!n)
+        {
+            ret += this[i]*vec[i];
+        }
+        return ret;
+    }
+    
+    /// Returns angle between two vectors in radians
+    Radian angle(ThisVector v)
+    {
+        return cast(Radian)(cast(double)dot(v)/length);
+    }
+    
+    static if(n == 3)
+    {
+        /// Returns cross product of this vector and $(B vec)
+        ThisVector cross(ThisVector v) nothrow const pure @safe
+        {
+            ThisVector ret;
+            ret.x = y*v.z - v.y*z;
+            ret.y = z*v.x - x*v.z;
+            ret.z = x*v.y - v.x*y;
+            return ret;
+        }
+    }
+    else static if(n == 2)
+    {
+        /// Returns cross product of this vector and $(B vec)
+        Vector!(Element, 3) cross(ThisVector v) nothrow const pure @safe
+        {
+            auto ret = Vector!(Element, 3).zeros;
+            ret.z = x*v.y - v.x*y;
+            return ret;
+        }
     }
 }
 unittest

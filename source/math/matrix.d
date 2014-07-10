@@ -27,7 +27,9 @@ import std.array;
 import std.conv;
 import std.format;
 import std.math;
+import std.traits;
 
+import math.angle;
 import math.vec;
 import util.functional;
 
@@ -946,3 +948,125 @@ unittest // rang
             0.08f, 0.0f, -0.08f 
         ).rang == 2);
 }
+
+/// Constructing a translation matrix
+mat44!T translateMatrix(T)(vec3!T v) pure nothrow @safe
+    if(isFloatingPoint!T)
+{
+    return mat44!T(
+        1.0, 0.0, 0.0, v.x,
+        0.0, 1.0, 0.0, v.y,
+        0.0, 0.0, 1.0, v.z,
+        0.0, 0.0, 0.0, 1.0,
+    );
+}
+
+/// Constructing a scaling matrix
+mat44!T scaleMatrix(T)(vec3!T v) pure nothrow @safe
+    if(isFloatingPoint!T)
+{
+    return mat44!T(
+        v.x, 0.0, 0.0, 0.0,
+        0.0, v.y, 0.0, 0.0,
+        0.0, 0.0, v.z, 0.0,
+        0.0, 0.0, 0.0, 1.0,
+    );
+}
+
+/// Constructing a rotation matrix from Euler's angles
+mat44!T rotationMatrix(T)(Vector!(T, 3) v) pure nothrow @safe
+    if(isFloatingPoint!T)
+{
+    auto pitch = v.x;
+    auto yaw = v.y;
+    auto roll = v.z;
+    
+    return mat44!T(
+        cos(yaw)*cos(roll), -cos(pitch)*sin(roll)+sin(pitch)*sin(yaw)*cos(roll),  sin(pitch)*sin(roll)+cos(pitch)*sin(yaw)*cos(roll), 0.0,
+        cos(yaw)*sin(roll),  cos(pitch)*cos(roll)+sin(pitch)*sin(yaw)*sin(roll), -sin(pitch)*cos(roll)+cos(pitch)*sin(yaw)*sin(roll), 0.0,
+        -sin(yaw),           sin(pitch)*cos(yaw),                                 cos(pitch)*cos(yaw),                                0.0,
+        0.0,                0.0,                                                  0.0,                                                1.0,
+    );
+}
+
+/// Constructing a rotation matrix from Euler's angles
+mat33!T rotationMatrix3(T)(Vector!(T, 3) v) pure nothrow @safe
+    if(isFloatingPoint!T)
+{
+    alias pitch = v.x;
+    alias yaw = v.y;
+    alias roll = v.z;
+    
+    return mat33!T(
+        cos(yaw)*cos(roll), -cos(pitch)*sin(roll)+sin(pitch)*sin(yaw)*cos(roll),  sin(pitch)*sin(roll)+cos(pitch)*sin(yaw)*cos(roll), 
+        cos(yaw)*sin(roll),  cos(pitch)*cos(roll)+sin(pitch)*sin(yaw)*sin(roll), -sin(pitch)*cos(roll)+cos(pitch)*sin(yaw)*sin(roll), 
+        -sin(yaw),           sin(pitch)*cos(yaw),                                 cos(pitch)*cos(yaw),                               
+    );
+}
+///
+unittest
+{
+    auto a = vec4!float(1,0,0,1);
+    a = rotationMatrix(vec3!float(0,PI/2.,0))*a;
+    assert(approxEqual(a.x,0) && approxEqual(a.z, -1) && a.y == 0 && a.w == 1, "Vertex rotation failed: "~to!string(a));
+
+    a = rotationMatrix(vec3!float(PI/2, 0, 0))*a;
+    assert(approxEqual(a.x,0) && approxEqual(a.y, 1) && approxEqual(a.z, 0) && a.w == 1, "Vertex rotation failed: "~to!string(a));
+}
+
+/// Returns projection matrix
+/**
+*   The matrix transforms camera coordinate system into window system.
+*   Param:
+*       fovyAngle    Angle of view. Usually value in range of [30 .. 90] degrees.
+*       aspect       Ratio of height to width of viewport
+*       zNear        Near clipping plane distance, should be as maximum as possible
+*       zFar         Far clipping plane distance, should be as minimum as possible
+*
+*   Note: Used to get MVP matrix (Model-View-Projection).
+*/
+mat44!T projectionMatrix(T, Angle)(Angle fovyAngle, T aspect, T zNear, T zFar)
+    if(isAngle!Angle && isFloatingPoint!T)
+{
+    immutable fovy  = cast(T)fovyAngle;
+    immutable top   = zNear*tan(fovy/2.0f);
+    immutable right = top / aspect;
+    
+    alias r = right;
+    alias t = top;
+    alias n = zNear;
+    alias f = zFar;
+    
+    return mat44!T(
+        n/r,    0.0,    0.0,             0.0,
+        0.0,    n/t,    0.0,             0.0,
+        0.0,    0.0,    -(f+n)/(f-n),   -2*f*n/(f-n),
+        0.0,    0.0,    -1.0,            0.0,
+    );
+}
+
+/// Returns matrix for rotating vector to look at specific point
+/**
+*   Kind of View matrix that transforms world coordinates to camera coordinates
+*   Params:
+*       eye Camera position
+*       at  Camera target
+*       up  Camera up direction
+*
+*   Note: Used to get MVP matrix (Model-View-Projection).
+*/
+mat44!T lookAt(T)(Vector!(T, 3) eye, Vector!(T, 3) at, Vector!(T, 3) up)
+{
+    immutable zaxis = (at-eye).normalize;
+    immutable xaxis = up.cross(zaxis);
+    immutable yaxis = zaxis.cross(xaxis);
+    
+    return mat44!T(
+       xaxis.x, xaxis.y, xaxis.z, -xaxis.dot(eye),
+       yaxis.x, yaxis.y, yaxis.z, -yaxis.dot(eye),
+       zaxis.x, zaxis.y, zaxis.z, -zaxis.dot(eye),
+       0.0,     0.0,    0.0,       1.0, 
+    );
+} 
+
+/// TransformedVector = ScaleMatrix * RotationMatrix * TranslationMatrix * OriginalVector;

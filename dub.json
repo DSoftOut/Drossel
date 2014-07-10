@@ -1,37 +1,37 @@
 {
-	"name" : "drossy-stars",
-	"copyright": "© 2014 Anton Gushcha",
-	"description" : "Sandbox minecraft like multiplayer game, where you survive in single solar system with other players, build industry, space ship, space stations and fight!",
-	"license": "GPL-3.0",
-	"authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>"],
-	"dependencies" : {
-	   "dlogg": "~master",
-	   "derelict-glfw3": "~master",
-       "derelict-gl3": "~master"
-	},
-	"configurations": [
-		{
-	   		"name": "library",
-	   		"description": "Engine as library",
-	   		"targetType": "library",
-	   		"targetName": "drossy-stars-engine",
-	   		"excludedSourceFiles": ["source/client/*", "source/server/*"]
-	   	},
-	   	{
-	    	"name": "client",
-	        "description": "Game client, that is built with rendering subsystem, but also is able to handle server functions.",
-	        "targetType": "executable",
-	        "targetName": "drossy-stars-client",
-	        "mainSourceFile": "source/client/main.d",
-	        "excludedSourceFiles": ["source/server/*"]
-	    },
-	    {
+    "name" : "drossel",
+    "copyright": "© 2014 Anton Gushcha",
+    "description" : "Sandbox minecraft like multiplayer game, where you survive in single solar system with other players, build industry, space ship, space stations and fight!",
+    "license": "GPL-3.0",
+    "authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>"],
+    "dependencies" : {
+        "dlogg": "~master",
+        "derelict-glfw3": "~master",
+        "derelict-gl3": "~master"
+    },
+    "configurations": [
+        {
+            "name": "library",
+            "description": "Engine as library",
+            "targetType": "library",
+            "targetName": "drossel-engine",
+            "excludedSourceFiles": ["source/client/*", "source/server/*"]
+        },
+        {
+            "name": "client",
+            "description": "Game client, that is built with rendering subsystem, but also is able to handle server functions.",
+            "targetType": "executable",
+            "targetName": "drossel-client",
+            "mainSourceFile": "source/client/main.d",
+            "excludedSourceFiles": ["source/server/*"]
+        },
+        {
             "name": "server",
             "description": "Game server, that is built without rendering subsystem.",
             "targetType": "executable",
-            "targetName": "drossy-stars-server",
+            "targetName": "drossel-server",
             "mainSourceFile": "source/server/main.d",
             "excludedSourceFiles": ["source/client/*"]
-	    }
-	]
+        }
+    ]
 }

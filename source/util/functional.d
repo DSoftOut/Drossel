@@ -602,3 +602,9 @@ unittest
     
     static assert(hasOp!(A, B, "*"));
 }
+
+/// Shortcut for trait allMembers
+template allMembers(T)
+{
+    alias allMembers = List!(__traits(allMembers, T));
+}

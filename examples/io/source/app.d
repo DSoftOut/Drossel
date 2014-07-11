@@ -77,7 +77,7 @@ struct MainWindowBehavior
         writeln("Key event: ", key, " ", scancode, " ", action, " ", mods); 
     }
     
-    mixin addDefaultWindowBehavior!(GLFWWindow, __traits(allMembers, typeof(this)));
+    mixin addDefaultWindowBehavior!(GLFWWindow, allMembers!(typeof(this)));
 }
 static assert(isWindowBehavior!MainWindowBehavior);
 

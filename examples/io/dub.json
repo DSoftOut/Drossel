@@ -5,6 +5,6 @@
 	"license": "GPL-3.0",
 	"authors": ["Anton Gushcha (NCrashed) <ncrashed@gmail.com>"],
 	"dependencies" : {
-		"drossy-stars": {"version": "~master", "path": "../.."}  
+		"drossel": {"version": "~master", "path": "../.."}  
 	}
 }

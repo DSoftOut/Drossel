@@ -608,3 +608,15 @@ template allMembers(T)
 {
     alias allMembers = List!(__traits(allMembers, T));
 }
+
+// hack to feed up parser a traits alias
+private template Alias(alias T)
+{
+    alias Alias = T;
+}
+
+/// Shortcut for getMember
+template getMember(T, string name)
+{   
+    alias getMember = Alias!(__traits(getMember, T, name));
+}

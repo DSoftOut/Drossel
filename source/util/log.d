@@ -69,7 +69,11 @@
 */
 module util.log;
 
+import std.traits;
+
 import dlogg.strict;
+
+import util.functional;
 
 /// The enum is used to choose logger type in $(B Logging) mixin template
 enum LoggerType
@@ -138,7 +142,7 @@ mixin template Logging(LoggerType type = LoggerType.Global)
             _logger.finalize();
         }
         
-        private shared(ILogger) logger()
+        shared(ILogger) logger()
         {
             return _logger;
         }
@@ -172,7 +176,7 @@ mixin template Logging(LoggerType type = LoggerType.Global)
     }
     else
     {
-        private shared(ILogger) logger()
+        shared(ILogger) logger()
         {
             return globalLogger;
         }
@@ -205,3 +209,33 @@ mixin template Logging(LoggerType type = LoggerType.Global)
         }
     }
 } 
+
+/// Checks if $(B T) has a logger mixined in.
+template hasLogging(T) if(isAggregateType!T)
+{
+    static if(hasMember!(T, "logger"))
+    {
+        static if(isCallable!(getMember!(T, "logger")))
+        {
+            enum hasLogging = is(ReturnType!(getMember!(T, "logger")) == shared(ILogger));
+        } else {
+            enum hasLogging = false;
+        }
+    } else {
+        enum hasLogging = false;
+    }
+}
+version(unittest)
+{
+    struct A {
+        mixin Logging!(LoggerType.Global);
+    }   
+    struct B {
+        shared(ILogger) logger;
+    }
+}
+unittest
+{
+    static assert(hasLogging!A);
+    static assert(!hasLogging!B);
+}

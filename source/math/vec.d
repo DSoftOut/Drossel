@@ -179,21 +179,21 @@ struct Vector(Element, size_t n)
     /// Indexing vector
     Element opIndex(size_t i) pure nothrow @safe
     {
-        assert(i < n, text("Overload opIndex ", i, " >= ", n));
+    	assert(i < n, "Overload opIndex!");
         return elements[i];
     }
     
     /// Indexing vector
     const(Element) opIndex(size_t i) const pure nothrow @safe
     {
-        assert(i < n, text("Overload opIndex ", i, " >= ", n));
+        assert(i < n, "Overload opIndex!");
         return elements[i];
     }
     
     /// Assign specific component
     ref ThisVector opIndexAssign(Element e, size_t i) pure nothrow @safe
     {
-        assert(i < n, text("Overload opIndexAssign ", i, " >= ", n));
+        assert(i < n, "Overload opIndex!");
         elements[i] = e;
         return this;
     }

@@ -22,8 +22,6 @@
 */
 module render.shader.opengl;
 
-import derelict.opengl3.gl3;
-
 import render.shader.shader;
 import render.shader.program;
 
@@ -56,6 +54,8 @@ mixin template addDefaultOpenGLShader(Members...)
     import std.traits;
     import std.typetuple;
 
+    import derelict.opengl3.gl3;
+    
     import render.shader.shader;
     import util.log;
     
@@ -168,6 +168,8 @@ mixin template addDefaultOpenGLShaderProgram(Members...)
     import std.traits;
     import std.typetuple;
 
+    import derelict.opengl3.gl3;
+    
     import render.shader.program;
     import render.shader.shader;
     import util.log;

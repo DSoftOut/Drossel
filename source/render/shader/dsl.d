@@ -27,7 +27,7 @@ module render.shader.dsl;
 /**
 *   Expression list for holding pairs of (parameter name, parameter value).
 *
-*   The template shouldn't be used outside $(B Shader) template,
+*   The template shouldn't be used outside $(B Kernel) template,
 *   the only purpose is collect pairs in one argument.
 */
 template ParamList(T...)
@@ -95,50 +95,50 @@ template ParamList(T...)
 /// Example
 unittest
 {
-    alias ParamShader = Shader!("ShaderParam", ParamList!("AVALUE", "a", "BVALUE", "b"), q{AVALUE * BVALUE});
-    static assert(ParamShader.sources == "a * b");
+    alias ParamKernel = Kernel!("KernelParam", ParamList!("AVALUE", "a", "BVALUE", "b"), q{AVALUE * BVALUE});
+    static assert(ParamKernel.sources == "a * b");
 }
 
 /**
-*   Helps to organize D-like module structure for OpenGL shaders:
+*   Helps to organize D-like module structure for OpenGL kernels:
 *   dependencies are included only once.
 *
-*   Shader are defined as:
-*   - list of dependent shaders
-*   - name literal (unique for one shader)
-*   - shader source code
+*   Kernel are defined as:
+*   - list of dependent kernels
+*   - name literal (unique for one kernel)
+*   - kernel source code
 * 
 *   Example:
 *   ----------
-*   alias Shader1 = Shader!("Shader1", q{it is Shader 1});
-*   alias Shader2 = Shader!(Shader1, "Shader2", q{it is Shader 2});
-*   alias Shader3 = Shader!(Shader1, "Shader3", q{it is Shader 3});
-*   alias Shader4 = Shader!(Shader2, Shader3, "Shader4", q{it is Shader 4});
+*   alias Kernel1 = Kernel!("Kernel1", q{it is Kernel 1});
+*   alias Kernel2 = Kernel!(Kernel1, "Kernel2", q{it is Kernel 2});
+*   alias Kernel3 = Kernel!(Kernel1, "Kernel3", q{it is Kernel 3});
+*   alias Kernel4 = Kernel!(Kernel2, Kernel3, "Kernel4", q{it is Kernel 4});
 *   // printing all sources including dependencies
-*   pragma(msg, Shader4.sources);
+*   pragma(msg, Kernel4.sources);
 *
-*   // Shaders can have parameters 
-*   alias ParamShader = Shader!(Shader4, "ShaderParam", ParamList!("AVALUE", "a", "BVALUE", "b"), q{ AVALUE * BVALUE });
-*   pragma(msg, ParamShader.sources);
+*   // Kernels can have parameters 
+*   alias ParamKernel = Kernel!(Kernel4, "KernelParam", ParamList!("AVALUE", "a", "BVALUE", "b"), q{ AVALUE * BVALUE });
+*   pragma(msg, ParamKernel.sources);
 *   ----------
 */
-template Shader(TS...)
+template Kernel(TS...)
 {
     static assert(TS.length >= 2);
     
     static if(is( typeof(TS[$-2]) == string) )
     {
         private enum hasParams = false; 
-        enum shaderName   = TS[$-2];
-        private enum shaderSource = TS[$-1];
-        alias dependentShaders = TS[0 .. $-2];
+        enum kernelName   = TS[$-2];
+        private enum kernelSource = TS[$-1];
+        alias dependentKernels = TS[0 .. $-2];
     } else
     {
         private enum hasParams = true;
         alias params = TS[$-2];
-        enum shaderName   = TS[$-3];
-        private enum shaderSource = TS[$-1];
-        alias dependentShaders = TS[0 .. $-3];
+        enum kernelName   = TS[$-3];
+        private enum kernelSource = TS[$-1];
+        alias dependentKernels = TS[0 .. $-3];
     }
     
     /// Builds lis of unique dependencies
@@ -190,7 +190,7 @@ template Shader(TS...)
                 }
                 else
                 {
-                    static if(TS[0].shaderName == T.shaderName)
+                    static if(TS[0].kernelName == T.kernelName)
                     {
                         enum Inner = true;
                     }
@@ -233,7 +233,7 @@ template Shader(TS...)
 
         }
         
-        alias makeDepends = inner1!(0, dependentShaders);
+        alias makeDepends = inner1!(0, dependentKernels);
     }
     
     private template MakeDepsSource(TS...)
@@ -246,12 +246,12 @@ template Shader(TS...)
         {
             static if(!TS[0].hasParams)
             {
-                enum MakeDepsSource = TS[0].shaderSource ~ "\n" 
+                enum MakeDepsSource = TS[0].kernelSource ~ "\n" 
                     ~ MakeDepsSource!(TS[1..$]);
             }
             else
             {
-                enum MakeDepsSource = TS[0].params.insertValues(TS[0].shaderSource) ~ "\n" 
+                enum MakeDepsSource = TS[0].params.insertValues(TS[0].kernelSource) ~ "\n" 
                     ~ MakeDepsSource!(TS[1..$]);
             }
         }
@@ -259,11 +259,11 @@ template Shader(TS...)
     
     static if(!hasParams)
     {
-        enum sources = MakeDepsSource!(makeDepends!()) ~ shaderSource;
+        enum sources = MakeDepsSource!(makeDepends!()) ~ kernelSource;
     }
     else
     {
-        enum sources = MakeDepsSource!(makeDepends!()) ~ params.insertValues(shaderSource);
+        enum sources = MakeDepsSource!(makeDepends!()) ~ params.insertValues(kernelSource);
     }
 }
 
@@ -282,6 +282,6 @@ private template MapNames(TS...)
     }
     else
     {
-        alias MapNames = ExpressionList!(TS[0].shaderName, MapNames!(TS[1..$]));
+        alias MapNames = ExpressionList!(TS[0].kernelName, MapNames!(TS[1..$]));
     }
 }

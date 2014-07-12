@@ -56,7 +56,7 @@ template isExpose(Type, Interfaces...)
     
         private template filterTrasient(string name) // and aliases
         {
-        	static if(is(typeof(__traits(getMember, Interface, name))))
+        	static if(__traits(compiles, __traits(getAttributes, __traits(getMember, Interface, name))))
         	{
         		enum filterTrasient 
         			= staticIndexOf!(trasient, __traits(getAttributes, __traits(getMember, Interface, name))) == -1;

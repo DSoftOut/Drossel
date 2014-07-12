@@ -58,6 +58,7 @@ mixin template addDefaultOpenGLShader(Members...)
     
     import render.shader.shader;
     import util.log;
+    import util.string;
     
     private alias T = typeof(this);
     
@@ -232,6 +233,7 @@ mixin template addDefaultOpenGLShaderProgram(Members...)
     import render.shader.program;
     import render.shader.shader;
     import util.log;
+    import util.string;
     
     private alias T = typeof(this);
     

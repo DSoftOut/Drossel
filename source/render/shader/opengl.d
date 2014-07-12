@@ -25,6 +25,7 @@ module render.shader.opengl;
 import derelict.opengl3.gl3;
 
 import render.shader.shader;
+import render.shader.program;
 
 /// Generates default implementation of shader interface for OpenGL
 /**
@@ -73,15 +74,15 @@ mixin template addDefaultOpenGLShader(Members...)
     static if(!hasSymbol!"id")
     {
         private GLuint _id;
+        private bool isCreated = false;
         
         /// Returns shader id (OpenGL)
         GLuint id()
         {
-            static bool flag = true;
-            if(flag)
+            if(!isCreated)
             {
                 _id = glCreateShader(mapShaderType(type));
-                flag = false;
+                isCreated = true;
             }
             return _id;
         }
@@ -98,12 +99,18 @@ mixin template addDefaultOpenGLShader(Members...)
                 case(ShaderType.TessellationEvaluation): return GL_TESS_EVALUATION_SHADER;
             }
         }
+        
+        ~this()
+        {
+            if(isCreated) glDeleteProgram(_id);
+        }
     }
     
     static if(!hasSymbol!"compile")
     {
         void compile()
         {
+            static if(hasLogging!T) logInfo("Compiling shader: ", name);
             const(char*) sourcePtr = source.toStringz;
             glShaderSource(id, 1, &sourcePtr, null);
             glCompileShader(id);
@@ -114,8 +121,6 @@ mixin template addDefaultOpenGLShader(Members...)
         
         private void check()
         {
-            static if(hasLogging!T) logInfo("Compiling shader: ", name);
-            
             GLint result = GL_FALSE;
             int logLength;
             glGetShaderiv(id, GL_COMPILE_STATUS, &result);
@@ -135,17 +140,160 @@ mixin template addDefaultOpenGLShader(Members...)
 version(unittest)
 {
     import util.functional;
+    import util.log;
     
     struct AShader
     {
         enum name = "TestShader";
         enum type = ShaderType.Fragment;
         string source() { return ""; }
-        
+    
+        mixin Logging!(LoggerType.Global);
         mixin addDefaultOpenGLShader!(allMembers!(typeof(this)));
     }
 }
 unittest
 {
     static assert(isShader!AShader);
+}
+
+/**
+*   Generates default implementation for shader program based on OpenGL 3.3.
+*
+*/
+mixin template addDefaultOpenGLShaderProgram(Members...)
+{
+    import std.conv;
+    import std.string;
+    import std.traits;
+    import std.typetuple;
+
+    import render.shader.program;
+    import render.shader.shader;
+    import util.log;
+    
+    private alias T = typeof(this);
+    
+    private template hasSymbol(string name)
+    {
+        enum hasSymbol = staticIndexOf!(name, Members) != -1 ||
+            __traits(compiles, { mixin("alias Identity!(T."~name~") Sym;"); });
+    }
+    
+    static assert(hasSymbol!"name", "addDefaultOpenGLShaderProgram expects "~T.stringof~" has a name enum!");
+    static assert(hasSymbol!"pipeline", "addDefaultOpenGLShaderProgram expects "~T.stringof~" has is a pipeline alias!");
+    
+    static if(!hasSymbol!"id")
+    {
+        private GLuint _id;
+        private bool isCreated = false;
+        
+        /// GPU program id (OpenGL)
+        GLuint id()
+        {
+            if(!isCreated)
+            {
+                _id = glCreateProgram();
+                isCreated = true;
+            }
+            return _id;
+        }
+        
+        ~this()
+        {
+            if(isCreated) glDeleteProgram(_id);
+        }
+    }
+    
+    static if(!hasSymbol!"compile")
+    {
+        private static string shaderField(size_t i)
+        {
+            return text("shader", i);
+        }
+    
+        private static string genShadersFields()
+        {
+            string ret;
+            alias pipelineShaders = pipeline.values;
+            foreach(i; Iota!(pipelineShaders.length))
+            {
+                ret ~= text(pipelineShaders[i].stringof, " ", shaderField(i), ";\n");
+            }
+            return ret;
+        }
+        //pragma(msg, genShadersFields);
+        mixin(genShadersFields);
+        
+        void compile()
+        {
+            alias pipelineTypes = pipeline.keys;
+            alias pipelineShaders = pipeline.values;
+            
+            foreach(i; Iota!(pipelineTypes.length))
+            {
+                enum shaderType = pipelineTypes[i];
+                alias shader = pipelineShaders[i];
+                
+                static assert(isShader!shader, text("Expecting a shaders in program ", name, " pipeline! "
+                    , shader.stringof, " is not a shader type!"));
+                
+                static if(hasLogging!T) logInfo("Compiling a ", shaderType, " for a program ", name);
+                
+                mixin(shaderField(i)).compile();
+            }
+        }
+    }
+    
+    static if(!hasSymbol!"link")
+    {
+        void link()
+        {
+            alias pipelineShaders = pipeline.values;
+            
+            foreach(i; Iota!(pipelineShaders.length))
+            {
+                glAttachShader(id, mixin(shaderField(i)).id);
+            }
+            glLinkProgram(id);
+            
+            // here exception could be thrown
+            check();
+        }
+        
+        private void check()
+        {
+            GLint result = GL_FALSE;
+            int logLength;
+            glGetProgramiv(id, GL_LINK_STATUS, &result);
+            glGetProgramiv(id, GL_INFO_LOG_LENGTH, &logLength);
+            if(logLength > 0)
+            {
+                auto buff = new char[logLength + 1];
+                glGetProgramInfoLog(id, logLength, null, buff.ptr);
+                
+                auto programLog = buff.ptr.fromStringz.idup;
+                static if(hasLogging!T) logError("Failed to link program: ", name, ". Reason: ", programLog);
+                throw new ProgramLinkingException(programLog);
+            }
+        }
+    }
+}
+version(unittest)
+{
+    import util.functional;
+    import util.log;
+    
+    struct AShaderProgram
+    {
+        enum name = "TestShaderProgram";
+        alias pipeline = KeyValueList!(ShaderType.Fragment, AShader);
+    
+        mixin Logging!(LoggerType.Global);
+        mixin addDefaultOpenGLShaderProgram!(allMembers!(typeof(this)));
+    }
+}
+unittest
+{
+    static assert(isShaderProgram!AShaderProgram);
 }

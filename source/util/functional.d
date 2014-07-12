@@ -748,6 +748,28 @@ template KeyValueList(Pairs...)
     {
         alias map = KeyValueList!(staticMap2!(F, Pairs));
     }
+    
+    private template getKeys(T...)
+    {
+        static if(T.length == 0) {
+            alias getKeys = List!();
+        } else {
+            alias getKeys = List!(T[0], getKeys!(T[2 .. $]));
+        }
+    }
+    /// Getting expression list of all keys
+    alias keys = getKeys!Pairs;
+    
+    private template getValues(T...)
+    {
+        static if(T.length == 0) {
+            alias getValues = List!();
+        } else {
+            alias getValues = List!(T[1], getValues!(T[2 .. $]));
+        }
+    }
+    /// Getting expression list of all values
+    alias values = getValues!Pairs;
 }
 ///
 unittest
@@ -782,4 +804,7 @@ unittest
     alias map6 = map.map!inc;
     static assert(map6.get!"a" == 43);
     static assert(map6.get!("a", "b") == List!(43, 24));
+    
+    static assert(map.keys == List!("a", "b"));
+    static assert(map.values == List!(42, 23));
 }

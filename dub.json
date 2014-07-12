@@ -23,7 +23,9 @@
             "targetType": "executable",
             "targetName": "drossel-client",
             "mainSourceFile": "source/client/main.d",
-            "excludedSourceFiles": ["source/server/*"]
+            "excludedSourceFiles": ["source/server/*"],
+            "copyFiles-windows-x86": ["deps/windows-x86/glfw3.dll"],
+            "copyFiles-windows-x86_64": ["deps/windows-x86_64/glfw3.dll"]
         },
         {
             "name": "server",

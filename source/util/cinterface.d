@@ -45,13 +45,13 @@ template isExpose(Type, Interfaces...)
 {
     private template getMembers(T)
     {
-        alias getMembers = List!(__traits(allMembers, T));
+        alias getMembers = ExpressionList!(__traits(allMembers, T));
     }
     
     private template isExposeSingle(Interface)
     {
-        alias intMembers = StrictList!(Filter!(filterTrasient, fieldsAndMethods!Interface));
-        alias intTypes = StrictList!(staticReplicate!(Interface, intMembers.expand.length)); 
+        alias intMembers = StrictExpressionList!(Filter!(filterTrasient, fieldsAndMethods!Interface));
+        alias intTypes = StrictExpressionList!(staticReplicate!(Interface, intMembers.expand.length)); 
         alias pairs = staticMap2!(bindType, staticRobin!(intTypes, intMembers)); 
     
         private template filterTrasient(string name) // and aliases
@@ -74,14 +74,14 @@ template isExpose(Type, Interfaces...)
                 alias getType = typeof(T);
             }
             
-            alias overloads_ = staticMap!(getType , List!(__traits(getOverloads, Base, T)));
+            alias overloads_ = staticMap!(getType , ExpressionList!(__traits(getOverloads, Base, T)));
             static if(overloads_.length == 0)
-                alias overloads = List!(typeof(__traits(getMember, Base, T)));
+                alias overloads = ExpressionList!(typeof(__traits(getMember, Base, T)));
             else
                 alias overloads = overloads_;
                             
             alias names = staticReplicate!(T, overloads.length);
-            alias bindType = staticRobin!(StrictList!overloads, StrictList!names);
+            alias bindType = staticRobin!(StrictExpressionList!overloads, StrictExpressionList!names);
         }
         
         template checkMember(MemberType, string MemberName)

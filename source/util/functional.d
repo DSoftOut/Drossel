@@ -20,7 +20,7 @@
 *   License: Subject to the terms of the GPL-3.0 license, as written in the included LICENSE file.
 *   Authors: Anton Gushcha <ncrashed@gmail.com>
 *
-*   More powerful templates for meta-programming than std.typeList provides.
+*   More powerful templates for meta-programming than std.typeExpressionList provides.
 */
 module util.functional;
 
@@ -33,22 +33,22 @@ import std.conv;
 *
 *   See_Also: Expression list at dlang.org documentation.
 */
-template List(T...)
+template ExpressionList(T...)
 {
-    alias List = T;
+    alias ExpressionList = T;
 }
 /// Example
 unittest
 {
-    static assert([List!(1, 2, 3)] == [1, 2, 3]);
+    static assert([ExpressionList!(1, 2, 3)] == [1, 2, 3]);
 }
 
 /**
-*   Sometimes we don't want to auto expand expression Lists.
+*   Sometimes we don't want to auto expand expression ExpressionLists.
 *   That can be used to pass several lists into templates without
 *   breaking their boundaries.
 */
-template StrictList(T...)
+template StrictExpressionList(T...)
 {
     alias expand = T;
 }
@@ -62,11 +62,11 @@ unittest
         enum Test = true;
     }
     
-    static assert(Test!(StrictList!(1, 2), StrictList!(3, 4)));
+    static assert(Test!(StrictExpressionList!(1, 2), StrictExpressionList!(3, 4)));
 }
 
 /**
-*   Same as std.typeList.staticMap, but passes two arguments to the first template.
+*   Same as std.typeExpressionList.staticMap, but passes two arguments to the first template.
 */
 template staticMap2(alias F, T...)
 {
@@ -74,15 +74,15 @@ template staticMap2(alias F, T...)
     
     static if (T.length < 2)
     {
-        alias staticMap2 = List!();
+        alias staticMap2 = ExpressionList!();
     }
     else static if (T.length == 2)
     {
-        alias staticMap2 = List!(F!(T[0], T[1]));
+        alias staticMap2 = ExpressionList!(F!(T[0], T[1]));
     }
     else
     {
-        alias staticMap2 = List!(F!(T[0], T[1]), staticMap2!(F, T[2  .. $]));
+        alias staticMap2 = ExpressionList!(F!(T[0], T[1]), staticMap2!(F, T[2  .. $]));
     }
 }
 /// Example
@@ -97,7 +97,7 @@ unittest
 }
 
 /**
-*   Same as std.typeList.allSatisfy, but passes 2 arguments to the first template.
+*   Same as std.typeExpressionList.allSatisfy, but passes 2 arguments to the first template.
 */
 template allSatisfy2(alias F, T...)
 {
@@ -141,11 +141,11 @@ template staticReplicate(TS...)
     
     static if(n > 0)
     {
-        alias staticReplicate = List!(T, staticReplicate!(T, n-1));
+        alias staticReplicate = ExpressionList!(T, staticReplicate!(T, n-1));
     }
     else
     {
-        alias staticReplicate = List!();
+        alias staticReplicate = ExpressionList!();
     }
 } 
 /// Example
@@ -170,7 +170,7 @@ template staticFold(alias F, T...)
 {
     static if(T.length == 0) // invalid input
     {
-        alias staticFold = List!(); 
+        alias staticFold = ExpressionList!(); 
     }
     else static if(T.length == 1)
     {
@@ -207,16 +207,16 @@ unittest
 }
 
 /**
-*   Compile-time variant of std.range.robin for expression Lists.
+*   Compile-time variant of std.range.robin for expression ExpressionLists.
 *   
-*   Template expects $(B StrictList) list as paramater and returns
-*   new expression list where first element is from first expression List,
-*   second element is from second List and so on, until one of input Lists
+*   Template expects $(B StrictExpressionList) list as paramater and returns
+*   new expression list where first element is from first expression ExpressionList,
+*   second element is from second ExpressionList and so on, until one of input ExpressionLists
 *   doesn't end.
 */
 template staticRobin(SF...)
 {
-    // Calculating minimum length of all Lists
+    // Calculating minimum length of all ExpressionLists
     private template minimum(T...)
     {
         enum length = T[1].expand.length;
@@ -237,11 +237,11 @@ template staticRobin(SF...)
         
         static if(i >= minLength)
         {
-            alias robin = List!();
+            alias robin = ExpressionList!();
         }
         else
         {
-            alias robin = List!(staticMap!(takeByIndex, SF), robin!(i+1));
+            alias robin = ExpressionList!(staticMap!(takeByIndex, SF), robin!(i+1));
         }
     }
     
@@ -250,16 +250,16 @@ template staticRobin(SF...)
 /// Example
 unittest
 {
-    alias test = staticRobin!(StrictList!(int, int, int), StrictList!(float, float));
-    static assert(is(test == List!(int, float, int, float)));
+    alias test = staticRobin!(StrictExpressionList!(int, int, int), StrictExpressionList!(float, float));
+    static assert(is(test == ExpressionList!(int, float, int, float)));
     
-    alias test2 = staticRobin!(StrictList!(1, 2), StrictList!(3, 4, 5), StrictList!(6, 7));
+    alias test2 = staticRobin!(StrictExpressionList!(1, 2), StrictExpressionList!(3, 4, 5), StrictExpressionList!(6, 7));
     static assert([test2]== [1, 3, 6, 2, 4, 7]);
 }
 
 /**
 *   Checks two expression lists to be equal. 
-*   $(B ET1) and $(B ET2) should be wrapped to $(B StrictList).
+*   $(B ET1) and $(B ET2) should be wrapped to $(B StrictExpressionList).
 */
 template staticEqual(alias ET1, alias ET2)
 {
@@ -275,11 +275,11 @@ template staticEqual(alias ET1, alias ET2)
         static if(is(T1[0]) && is(T2[0]))
         {
             enum staticEqual = is(T1[0] == T2[0]) && 
-                staticEqual!(StrictList!(T1[1 .. $]), StrictList!(T2[1 .. $]));
+                staticEqual!(StrictExpressionList!(T1[1 .. $]), StrictExpressionList!(T2[1 .. $]));
         } else static if(!is(T1[0]) && !is(T2[0]))
         {
             enum staticEqual = T1[0] == T2[0] &&  
-                staticEqual!(StrictList!(T1[1 .. $]), StrictList!(T2[1 .. $]));
+                staticEqual!(StrictExpressionList!(T1[1 .. $]), StrictExpressionList!(T2[1 .. $]));
         } else
         {
             enum staticEqual = false;
@@ -289,13 +289,13 @@ template staticEqual(alias ET1, alias ET2)
 /// Example
 unittest
 {
-    static assert(staticEqual!(StrictList!(1, 2, 3), StrictList!(1, 2, 3)));
-    static assert(staticEqual!(StrictList!(int, float, 3), StrictList!(int, float, 3)));
-    static assert(!staticEqual!(StrictList!(int, float, 4), StrictList!(int, float, 3)));
-    static assert(!staticEqual!(StrictList!(void, float, 4), StrictList!(int, float, 4)));
-    static assert(!staticEqual!(StrictList!(1, 2, 3), StrictList!(1, void, 3)));
-    static assert(!staticEqual!(StrictList!(float), StrictList!()));
-    static assert(staticEqual!(StrictList!(), StrictList!()));
+    static assert(staticEqual!(StrictExpressionList!(1, 2, 3), StrictExpressionList!(1, 2, 3)));
+    static assert(staticEqual!(StrictExpressionList!(int, float, 3), StrictExpressionList!(int, float, 3)));
+    static assert(!staticEqual!(StrictExpressionList!(int, float, 4), StrictExpressionList!(int, float, 3)));
+    static assert(!staticEqual!(StrictExpressionList!(void, float, 4), StrictExpressionList!(int, float, 4)));
+    static assert(!staticEqual!(StrictExpressionList!(1, 2, 3), StrictExpressionList!(1, void, 3)));
+    static assert(!staticEqual!(StrictExpressionList!(float), StrictExpressionList!()));
+    static assert(staticEqual!(StrictExpressionList!(), StrictExpressionList!()));
 }
 
 /**
@@ -315,7 +315,7 @@ template hasOverload(T, ElemType, string ElemName)
         static if(isCallable!ElemType)
         {
             alias retType = ReturnType!ElemType;
-            alias paramList = ParameterTypeTuple!ElemType;
+            alias paramExpressionList = ParameterTypeTuple!ElemType;
             
             private template extractType(alias F)
             {
@@ -325,7 +325,7 @@ template hasOverload(T, ElemType, string ElemName)
             static if(hasMember!(T, ElemName))
                 alias overloads = staticMap!(extractType, __traits(getOverloads, T, ElemName));
             else
-                alias overloads = List!();
+                alias overloads = ExpressionList!();
             
             /// TODO: at next realease check overloads by attributes
             //pragma(msg, __traits(getFunctionAttributes, sum));
@@ -334,7 +334,7 @@ template hasOverload(T, ElemType, string ElemName)
             {
                 static if(is(ReturnType!F == retType))
                 {
-                    enum checkType = staticEqual!(StrictList!(ParameterTypeTuple!F), StrictList!(paramList));
+                    enum checkType = staticEqual!(StrictExpressionList!(ParameterTypeTuple!F), StrictExpressionList!(paramExpressionList));
                 } else
                 {
                     enum checkType = false;
@@ -402,8 +402,8 @@ template fieldsAndMethods(T)
         /// Getting all inherited members from Object exluding overrided
         private template derivedFromObject()
         {
-            alias objectMembers = List!(__traits(allMembers, Object));
-            alias derivedMembers = List!(__traits(derivedMembers, T));
+            alias objectMembers = ExpressionList!(__traits(allMembers, Object));
+            alias derivedMembers = ExpressionList!(__traits(derivedMembers, T));
             
             private template removeDerived(string name)
             {
@@ -437,7 +437,7 @@ template fieldsAndMethods(T)
     }
     else
     {
-        alias fieldsAndMethods = List!();
+        alias fieldsAndMethods = ExpressionList!();
     }
 }
 /// Example
@@ -464,9 +464,9 @@ unittest
         override string toString() const {return "";}
     }
     
-    static assert(staticEqual!(StrictList!(fieldsAndMethods!A), StrictList!("a", "b", "foo", "bar"))); 
-    static assert(staticEqual!(StrictList!(fieldsAndMethods!B), StrictList!("a", "b", "foo", "bar"))); 
-    static assert(staticEqual!(StrictList!(fieldsAndMethods!C), StrictList!("toString"))); 
+    static assert(staticEqual!(StrictExpressionList!(fieldsAndMethods!A), StrictExpressionList!("a", "b", "foo", "bar"))); 
+    static assert(staticEqual!(StrictExpressionList!(fieldsAndMethods!B), StrictExpressionList!("a", "b", "foo", "bar"))); 
+    static assert(staticEqual!(StrictExpressionList!(fieldsAndMethods!C), StrictExpressionList!("toString"))); 
 }
 
 /**
@@ -607,7 +607,7 @@ unittest
 /// Shortcut for trait allMembers
 template allMembers(T)
 {
-    alias allMembers = List!(__traits(allMembers, T));
+    alias allMembers = ExpressionList!(__traits(allMembers, T));
 }
 
 // hack to feed up parser a traits alias
@@ -633,7 +633,7 @@ template KeyValueList(Pairs...)
     
     /**
     *   Getting values by keys. If $(B Keys) is a one key, then
-    *   returns unwrapped value, else a ExpressionList of values.
+    *   returns unwrapped value, else a ExpressionExpressionList of values.
     */
     template get(Keys...)
     {
@@ -650,7 +650,7 @@ template KeyValueList(Pairs...)
             private template innerFind(T...)
             {
                 static if(T.length == 0) {
-                    alias innerFind = List!();
+                    alias innerFind = ExpressionList!();
                 } else
                 {
                     static if(is(Keys[0])) { 
@@ -680,7 +680,7 @@ template KeyValueList(Pairs...)
 
             alias get = innerFind!Pairs; 
         } else {
-            alias get = List!(get!(Keys[0 .. $/2]), get!(Keys[$/2 .. $]));
+            alias get = ExpressionList!(get!(Keys[0 .. $/2]), get!(Keys[$/2 .. $]));
         }
     }
     
@@ -688,14 +688,14 @@ template KeyValueList(Pairs...)
     template has(Key...)
     {
         static assert(Key.length == 1);
-        enum has = List!(get!Key).length > 0; 
+        enum has = ExpressionList!(get!Key).length > 0; 
     }
     
     /// Setting values to specific keys (or adding new key-values)
     template set(KeyValues...)
     {
         static assert(KeyValues.length >= 2, "KeyValueList.set is expecting at least one pair!");
-        static assert(KeyValues.length % 2 == 0, "KeyValuesList.set is expecting even count of arguments!");
+        static assert(KeyValues.length % 2 == 0, "KeyValuesExpressionList.set is expecting even count of arguments!");
         
         template inner(KeyValues...)
         {
@@ -715,21 +715,21 @@ template KeyValueList(Pairs...)
                 private template innerFind(T...)
                 {
                     static if(T.length == 0) {
-                        alias innerFind = List!(Key, Value);
+                        alias innerFind = ExpressionList!(Key, Value);
                     } else
                     {
                         static if(is(Key)) { 
                             static if(is(T[0] == Key)) {
-                                alias innerFind = List!(Key, Value, T[2 .. $]);
+                                alias innerFind = ExpressionList!(Key, Value, T[2 .. $]);
                             } else {
-                                alias innerFind = List!(T[0 .. 2], innerFind!(T[2 .. $]));
+                                alias innerFind = ExpressionList!(T[0 .. 2], innerFind!(T[2 .. $]));
                             }
                         } else
                         {
                             static if(T[0] == Key) {
-                                alias innerFind = List!(Key, Value, T[2 .. $]);
+                                alias innerFind = ExpressionList!(Key, Value, T[2 .. $]);
                             } else {
-                                alias innerFind = List!(T[0 .. 2], innerFind!(T[2 .. $]));
+                                alias innerFind = ExpressionList!(T[0 .. 2], innerFind!(T[2 .. $]));
                             }
                         }
                     }
@@ -737,7 +737,7 @@ template KeyValueList(Pairs...)
     
                 alias inner = innerFind!Pairs; 
             } else {
-                alias inner = List!(inner!(KeyValues[0 .. $/2]), inner!(KeyValues[$/2 .. $]));
+                alias inner = ExpressionList!(inner!(KeyValues[0 .. $/2]), inner!(KeyValues[$/2 .. $]));
             }
         }
         alias set = KeyValueList!(inner!KeyValues);
@@ -752,9 +752,9 @@ template KeyValueList(Pairs...)
     private template getKeys(T...)
     {
         static if(T.length == 0) {
-            alias getKeys = List!();
+            alias getKeys = ExpressionList!();
         } else {
-            alias getKeys = List!(T[0], getKeys!(T[2 .. $]));
+            alias getKeys = ExpressionList!(T[0], getKeys!(T[2 .. $]));
         }
     }
     /// Getting expression list of all keys
@@ -763,9 +763,9 @@ template KeyValueList(Pairs...)
     private template getValues(T...)
     {
         static if(T.length == 0) {
-            alias getValues = List!();
+            alias getValues = ExpressionList!();
         } else {
-            alias getValues = List!(T[1], getValues!(T[2 .. $]));
+            alias getValues = ExpressionList!(T[1], getValues!(T[2 .. $]));
         }
     }
     /// Getting expression list of all values
@@ -776,7 +776,7 @@ unittest
 {
     alias map = KeyValueList!("a", 42, "b", 23);
     static assert(map.get!"a" == 42);
-    static assert(map.get!("a", "b") == List!(42, 23));
+    static assert(map.get!("a", "b") == ExpressionList!(42, 23));
     static assert(map.get!"c".length == 0);
     
     alias map2 = KeyValueList!(int, float, float, double, double, 42);
@@ -792,19 +792,19 @@ unittest
     alias map3 = map.set!("c", 4);
     static assert(map3.get!"c" == 4);
     alias map4 = map.set!("c", 4, "d", 8);
-    static assert(map4.get!("c", "d") == List!(4, 8));
+    static assert(map4.get!("c", "d") == ExpressionList!(4, 8));
     alias map5 = map.set!("a", 4);
     static assert(map5.get!"a" == 4);
     
     template inc(string key, int val)
     {
-        alias inc = List!(key, val+1);
+        alias inc = ExpressionList!(key, val+1);
     }
     
     alias map6 = map.map!inc;
     static assert(map6.get!"a" == 43);
-    static assert(map6.get!("a", "b") == List!(43, 24));
+    static assert(map6.get!("a", "b") == ExpressionList!(43, 24));
     
-    static assert(map.keys == List!("a", "b"));
-    static assert(map.values == List!(42, 23));
+    static assert(map.keys == ExpressionList!("a", "b"));
+    static assert(map.values == ExpressionList!(42, 23));
 }

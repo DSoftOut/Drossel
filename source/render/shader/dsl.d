@@ -30,7 +30,7 @@ module render.shader.dsl;
 *   The template shouldn't be used outside $(B Shader) template,
 *   the only purpose is collect pairs in one argument.
 */
-template KeyValueList(T...)
+template ParamList(T...)
 {
     static assert(T.length % 2 == 0, "Expecting pairs of (variable_name, value)");
     static assert(checkTypes!T, "Expecting pairs of (string, some value convertable to string)");
@@ -95,7 +95,7 @@ template KeyValueList(T...)
 /// Example
 unittest
 {
-    alias ParamShader = Shader!("ShaderParam", KeyValueList!("AVALUE", "a", "BVALUE", "b"), q{AVALUE * BVALUE});
+    alias ParamShader = Shader!("ShaderParam", ParamList!("AVALUE", "a", "BVALUE", "b"), q{AVALUE * BVALUE});
     static assert(ParamShader.sources == "a * b");
 }
 
@@ -118,7 +118,7 @@ unittest
 *   pragma(msg, Shader4.sources);
 *
 *   // Shaders can have parameters 
-*   alias ParamShader = Shader!(Shader4, "ShaderParam", KeyValueList!("AVALUE", "a", "BVALUE", "b"), q{ AVALUE * BVALUE });
+*   alias ParamShader = Shader!(Shader4, "ShaderParam", ParamList!("AVALUE", "a", "BVALUE", "b"), q{ AVALUE * BVALUE });
 *   pragma(msg, ParamShader.sources);
 *   ----------
 */

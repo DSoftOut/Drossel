@@ -64,11 +64,25 @@ struct CIBuffer
 	void[] rawData();
 	
 	/// OpenGL buffer where data is stored on GPU side
-	GLenum buffer();
+	GLenum id();
 	
 	/// Stored element of data
 	@trasient
 	alias Element = ubyte;
+	
+	/// Type of elementary element for OpenGL driver
+	/**
+	*  If $(B Element) is vector of floats, then 
+	*  $(B glType) should be GL_Float.
+	*/
+	enum GLenum glType = GL_FLOAT;
+	
+	/// Count of elementary elements in buffer element
+	/**
+	*  If $(B Element) is vec3!float, then $(B elementSize)
+	*  should be equal 3.
+	*/
+	enum size_t elementSize = 3;
 	
 	/// Getting data of the buffer
 	@trasient
@@ -185,7 +199,7 @@ mixin template genDynamicBuffer(ElementType, BufferType btype)
 	}
 
 	/// OpenGL buffer where data is stored on GPU side
-	GLenum buffer()
+	GLenum id()
 	{
 		return _buffer;
 	}

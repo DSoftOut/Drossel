@@ -22,12 +22,17 @@
 */
 module render.buffer.normal;
 
+import derelict.opengl3.gl3;
+
 import render.buffer.buffer;
 import math.vec;
 
 /// Buffer that stores GPU normals
 struct NormalBuffer(BufferType btype)
 {
+    enum GLenum glType = GL_FLOAT;
+    enum size_t elementSize = 3;
+    
 	mixin genDynamicBuffer!(vec3!float, btype);
 }
 

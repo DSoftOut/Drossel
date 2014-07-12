@@ -27,11 +27,16 @@ import std.traits;
 import util.cinterface;
 import math.vec;
 
+import derelict.opengl3.gl3;
+
 /// Compile time interface for colors
 struct CIColor
 {
 	/// Components count
 	enum size_t length = 0; 
+
+	/// Element type in OpenGL term
+	enum GLenum elementGlType = GL_FLOAT;
 	
 	/// Translates the color to opengl format [0, 1]
 	@trasient
@@ -76,6 +81,9 @@ struct RGB
 {
 	/// Components count
 	enum size_t length = 3;
+	
+	/// OpenGL type of an element
+	enum GLenum elementGlType = GL_FLOAT;
 	
 	/// Color components
 	float[length] components = [0.0f, 0.0f, 0.0f];
@@ -148,6 +156,9 @@ struct RGBA
 	/// Components count
 	enum size_t length = 4;
 	
+    /// OpenGL type of an element
+    enum GLenum elementGlType = GL_FLOAT;
+    
 	/// Color components
 	float[length] components = [0.0f, 0.0f, 0.0f, 0.0f];
 	

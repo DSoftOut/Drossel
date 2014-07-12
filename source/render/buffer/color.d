@@ -22,6 +22,8 @@
 */
 module render.buffer.color;
 
+import derelict.opengl3.gl3;
+
 import render.color;
 import render.buffer.buffer;
 import math.vec;
@@ -30,6 +32,9 @@ import math.vec;
 struct ColorBuffer(Color, BufferType btype)
 	if(isColor!Color)
 {
+    enum GLenum glType = Color.elementGlType;
+    enum size_t elementSize = Color.length;
+    
 	mixin genDynamicBuffer!(Color, btype);
 }
 

@@ -34,6 +34,12 @@ struct CubeVertexShader
     enum name = "CubeVertexShader";
     enum type = ShaderType.Vertex;
     
+    enum BufferSlot 
+    {
+        Verticies,
+        Colors
+    }
+    
     string source() 
     {
         return Kernel!(name, q{

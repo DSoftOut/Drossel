@@ -71,6 +71,15 @@ mixin template addDefaultOpenGLShader(Members...)
     static assert(hasSymbol!"type", "addDefaultOpenGLShader expects "~T.stringof~" has is a type enum!");
     static assert(hasSymbol!"source", "addDefaultOpenGLShader expects "~T.stringof~" has is a source function!");
     
+    static if(!hasSymbol!"BufferSlot")
+    {
+        enum BufferSlot {None}
+    } else
+    {
+        static assert(is(BufferSlot == enum), "addDefaultOpenGLShader expects "~T.stringof~" has is a BufferSlot alias"
+            " that is an enum!");
+    }
+    
     static if(!hasSymbol!"id")
     {
         private GLuint _id;
@@ -136,6 +145,56 @@ mixin template addDefaultOpenGLShader(Members...)
             }
         }
     }
+    
+    static if(!hasSymbol!"bindBuffer")
+    {
+        /**
+        *   Binds $(B buffer) to specified $(B slot), that is defined by $(B BufferSlot)
+        *   enumeration.
+        */
+        void bindBuffer(BufferSlot slot, Buffer)(Buffer buffer)
+            if(isBuffer!Buffer)
+        {
+            enum layoutId = mapSlotToLayout(slot);
+            glEnableVertexAttribArray(layoutId);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer.id);
+            glVertexAttribPointer(
+                layoutId,
+                buffer.elementSize,
+                buffer.glType,
+                GL_FALSE,
+                0,
+                null
+            );
+        }
+        
+        /// Maps slot to a shader layout index
+        /**
+        *   Simply returns number of value in $(B BufferSlot) enum.
+        */
+        private static GLuint mapSlotToLayout(BufferSlot slot)
+        {
+            foreach(i, element; __traits(allMembers, BufferSlot))
+            {
+                if(slot == mixin("BufferSlot."~element)) return i;
+            }
+            return 0;
+        }
+    }
+    
+    static if(!hasSymbol!"unbindBuffers")
+    {
+        /**
+        *   All binded buffers should be unbinded after rendering pass.
+        */
+        void unbindBuffers()
+        {
+            foreach(i, element; __traits(allMembers, BufferSlot))
+            {
+                glDisableVertexAttribArray(i);
+            }
+        }
+    }
 }
 version(unittest)
 {
@@ -147,7 +206,7 @@ version(unittest)
         enum name = "TestShader";
         enum type = ShaderType.Fragment;
         string source() { return ""; }
-    
+        
         mixin Logging!(LoggerType.Global);
         mixin addDefaultOpenGLShader!(allMembers!(typeof(this)));
     }

@@ -266,7 +266,7 @@ template isWindowBehavior(T)
             alias paramList = ParameterTypeTuple!(__traits(getMember, T, name));
             static if(paramList.length >= 1)
             {
-                enum hasMethod = isWindow!(paramList[0]) && staticEqual!(StrictList!(paramList[1 .. $]), StrictList!RestParams);
+                enum hasMethod = isWindow!(paramList[0]) && staticEqual!(StrictExpressionList!(paramList[1 .. $]), StrictExpressionList!RestParams);
             } else
             {
                 enum hasMethod = false;
@@ -279,19 +279,19 @@ template isWindowBehavior(T)
     
     enum isWindowBehavior = isExpose!(T, CIWindowBehavior) &&
         allSatisfy2!(hasMethod,
-        "positionCallback", StrictList!(vec2!uint),
-        "sizeCallback", StrictList!(vec2!uint),
-        "closeCallback", StrictList!(),
-        "refreshCallback", StrictList!(),
-        "focusCallback", StrictList!bool,
-        "iconifyCallback", StrictList!bool,
-        "framebufferSizeCallback", StrictList!(vec2!uint),
-        "mouseButtonCallback", StrictList!(MouseButton, MouseButtonAction, Modificators),
-        "cursorPosCallback", StrictList!(vec2!double),
-        "cursorEnterCallback", StrictList!bool,
-        "scrollCallback", StrictList!(vec2!double),
-        "keyCallback", StrictList!(KeyboardKey, uint, KeyboardKeyAction, Modificators),
-        "charCallback", StrictList!dchar);
+        "positionCallback", StrictExpressionList!(vec2!uint),
+        "sizeCallback", StrictExpressionList!(vec2!uint),
+        "closeCallback", StrictExpressionList!(),
+        "refreshCallback", StrictExpressionList!(),
+        "focusCallback", StrictExpressionList!bool,
+        "iconifyCallback", StrictExpressionList!bool,
+        "framebufferSizeCallback", StrictExpressionList!(vec2!uint),
+        "mouseButtonCallback", StrictExpressionList!(MouseButton, MouseButtonAction, Modificators),
+        "cursorPosCallback", StrictExpressionList!(vec2!double),
+        "cursorEnterCallback", StrictExpressionList!bool,
+        "scrollCallback", StrictExpressionList!(vec2!double),
+        "keyCallback", StrictExpressionList!(KeyboardKey, uint, KeyboardKeyAction, Modificators),
+        "charCallback", StrictExpressionList!dchar);
 }
 
 /**

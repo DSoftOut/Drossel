@@ -26,6 +26,7 @@ import std.range;
 
 import derelict.opengl3.gl3;
 
+import render.buffer.buffer;
 import util.cinterface;
 
 /// Represents shader type
@@ -78,6 +79,29 @@ struct CIShader
     *   Should throw $(B ShaderCompilationException) on compilation errors.
     */
     void compile();      
+    
+    /**
+    *   Enumeration that describes available slots for buffers
+    *   (vertex, color, normal, etc) in the shader.
+    *
+    *   The each type value corresponds for one buffer slot.
+    *
+    *   The following buffers are binded to the shader at mesh level.
+    */
+    alias BufferSlot = int; // if(is(BufferSlot == enum))
+    
+    /**
+    *   Binds $(B buffer) to specified $(B slot), that is defined by $(B BufferSlot)
+    *   enumeration.
+    */
+    @trasient
+    void bindBuffer(BufferSlot slot, Buffer)(Buffer buffer)
+        if(isBuffer!Buffer);
+        
+    /**
+    *   All binded buffers should be unbinded after rendering pass.
+    */
+    void unbindBuffers();
 }
 
 /// Checks if $(B T) is a shader program

@@ -40,13 +40,13 @@ struct Radian
 	alias value this;
 	
 	/// Creating from raw value
-	this(double value)
+	this(double value) pure nothrow @safe
 	{
 		this.value = value;
 	}
 	
 	/// Converts degrees to radians
-	this(Degree value)
+	this(Degree value) pure nothrow @safe
 	{
 		this.value = (cast(double)value) * (PI / 180.0);
 	}
@@ -58,7 +58,7 @@ struct Radian
 	}
 	
 	/// Trims radian angle in range (-2*PI..2*PI).
-	ref Radian trim()
+	ref Radian trim() pure nothrow @safe
 	{
 		while( value > 2*PI || approxEqual(value, 2*PI))
 			value -= 2*PI;
@@ -88,13 +88,13 @@ struct Degree
 	alias value this;
 	
 	/// Creating from raw value
-	this(double value)
+	this(double value) pure nothrow @safe
 	{
 		this.value = value;
 	}
 	
 	/// Converts radians to degrees
-	this(Radian value)
+	this(Radian value) pure nothrow @safe
 	{
 		this.value = (cast(double)value) * (180.0 / PI);
 	}
@@ -106,7 +106,7 @@ struct Degree
 	}
 	
 	/// Trims degree angle in range (-360.0..360.0).
-	ref Degree trim()
+	ref Degree trim() pure nothrow @safe
 	{
 		while( value > 360.0 || approxEqual(value, 360.0))
 			value -= 360.0;

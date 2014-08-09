@@ -119,6 +119,13 @@ struct Vector(Element, size_t n)
             elements[2] = val; 
             return this; 
         }
+        
+        /// Shortcut for angle vector
+        alias pitch = x;
+        /// Shortcut for angle vector
+        alias yaw   = y;
+        /// Shortcut for angle vector
+        alias roll  = z;
     }
     
     static if(n >= 4)
@@ -268,7 +275,20 @@ struct Vector(Element, size_t n)
         }
         return res;
     }
-
+    
+    /// Comparing with std.math.approxEqual
+    bool approxEqual(OtherElement)(auto ref const Vector!(OtherElement, n) vec
+        , double maxRelDiff = 1e-2, double maxAbsDiff = 1e-5) const pure nothrow @safe
+        if(__traits(compiles, std.math.approxEqual(Element.init, OtherElement.init, double.init, double.init)))
+    {
+        bool res = true;
+        foreach(i; Iota!n)
+        {
+            res = res && std.math.approxEqual(this[i], vec[i], maxRelDiff, maxAbsDiff);
+        }
+        return res;
+    }
+    
     /**
     *   Generates new vector from pattern $(B op).
     *

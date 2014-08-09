@@ -649,6 +649,17 @@ struct Matrix(Element, size_t n, size_t m)
             return ret;
         }
         
+        /// Returning sum of elements on main diagonal
+        Element trace() pure @safe const
+        {
+            auto temp = cast(Element)0;
+            foreach(i; Iota!(1, n))
+            {
+               temp += this[i, i];
+            }
+            return temp;
+        }
+        
         /// Applying $(B func) to each element of the matrix
         ref ThisMatrix apply(alias func)()
             if(__traits(compiles, func(Element.init)))
@@ -993,9 +1004,9 @@ mat44!T rotationMatrix(T)(Vector!(T, 3) v) pure nothrow @safe
 mat33!T rotationMatrix3(T)(Vector!(T, 3) v) pure nothrow @safe
     if(isFloatingPoint!T)
 {
-    alias pitch = v.x;
-    alias yaw = v.y;
-    alias roll = v.z;
+    auto pitch = v.x;
+    auto yaw = v.y;
+    auto roll = v.z;
     
     return mat33!T(
         cos(yaw)*cos(roll), -cos(pitch)*sin(roll)+sin(pitch)*sin(yaw)*cos(roll),  sin(pitch)*sin(roll)+cos(pitch)*sin(yaw)*cos(roll), 

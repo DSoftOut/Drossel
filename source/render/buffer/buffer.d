@@ -26,6 +26,7 @@ import std.traits;
 import std.range;
 
 import derelict.opengl3.gl3;
+public import derelict.opengl3.gl3 : GLenum;
 
 import util.cinterface;
 
@@ -177,223 +178,234 @@ template isBuffer(T)
 */
 mixin template genDynamicBuffer(ElementType, BufferType btype)
 {
-	import std.bitmanip;
+    mixin genStaticBuffer!(ElementType, btype, () => cast(ElementType[])[]);
+}
 
-	import derelict.opengl3.gl3;
-	
-	import render.buffer.buffer;
-	
-	/// Stored element of data
-	alias Element = ElementType;
+/**
+*   Generates default implementation for buffers filled with $(B ElementType)
+*   with updating strategy $(B btype).
+*
+*   That buffers can be filled in compile-time with $(B DataInitializer).
+*/
+mixin template genStaticBuffer(ElementType, BufferType btype, alias DataInitializer)
+{
+    import std.bitmanip;
 
-	/// Creating from array of data
-	this(const(Element[]) pdata = [])
-	{
-		_data = pdata.dup;
-		static if(btype != BufferType.Static)
-			changeMap.length = _data.length;
-			
-		glGenBuffers(1, &_buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, _buffer);
-		glBufferData(GL_ARRAY_BUFFER, rawData.length, rawData.ptr, btype.mapBufferTypeToGL);
-	}
+    import derelict.opengl3.gl3;
+    
+    import render.buffer.buffer;
+    
+    /// Stored element of data
+    alias Element = ElementType;
 
-	/// OpenGL buffer where data is stored on GPU side
-	GLenum id()
-	{
-		return _buffer;
-	}
-	
-	/// Getting raw data of the buffer
-	void[] rawData()
-	{
-		return cast(void[]) _data;
-	}
-		
-	/// Getting raw data of the buffer
-	const(void[]) rawData() const
-	{
-		return cast(void[]) _data;
-	}
-	
-	/// Getting data of the buffer
-	Element[] data()
-	{
-		return _data;
-	}
-	
-	/// Getting data of the buffer
-	const(Element[]) data() const
-	{
-		return _data;
-	}
-	
-	/// Getting buffer type
-	BufferType type()
-	{
-		return btype;
-	}
-	
-	/// If there is data to be loaded to GPU?
-	bool dirty()
-	{
-		static if(btype == BufferType.Static)
-		{
-			return false;
-		}
-		else
-		{
-			return _dirty;
-		}
-	}
-	
-	/// Loads changes from CPU side to GPU
-	void update()
-	{
-		static if(btype != BufferType.Static)
-		{
-			if(_dirty)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, _buffer);
-				
-				// Scanning buffer for changes
-				for(size_t i = 0; i < changeMap.length; i++)
-				{
-					if(changeMap[i])
-					{
-						size_t j = i;
-						while(j < changeMap.length && changeMap[j]) j++;
-						
-						// Loading data
-						glBufferSubData(GL_ARRAY_BUFFER
-							, i*Element.sizeof, (j-i+1)*Element.sizeof
-							, rawData[i*Element.sizeof .. (j+1)*Element.sizeof].ptr);
-					}
-				}
-				
-				// Cleaning helping structures
-				_dirty = false;
-				changeMap.length = 0;
-				changeMap.length = _data.length;
-			}
-		}
-	}
-	
-	/// Updates element of the buffer at place $(B i)
-	/**
-	*	Does nothing for static buffers
-	*/
-	Element opIndexAssign(Element e, size_t i)
-	{
-		static if(btype != BufferType.Static)
-		{
-			_data[i] = e;
-		}
-		return e;
-	}
-	
-	/// Reading element at place $(B i)
-	Element opIndex(size_t i)
-	{
-		return _data[i];
-	}
-	
-	const(Element) opIndex(size_t i) const
-	{
-		return _data[i];
-	}
-	
-	/// Filling the buffer with element $(B e)
-	/**
-	*	Does nothing for static buffers
-	*/
-	Element opSliceAssign(Element e)
-	{
-		static if(btype != BufferType.Static)
-		{
-			_data[] = e;
-		}
-		return e;
-	}
-	
-	/// Filling part of the buffer with element $(B e)
-	/**
-	*	Does nothing for static buffers
-	*/
-	Element opSliceAssign(Element e, size_t x, size_t y)
-	{
-		static if(btype != BufferType.Static)
-		{
-			_data[x .. y] = e;
-		}
-		return e;
-	}
+    /// Creating from array of data
+    this(const(Element[]) pdata = [])
+    {
+        _data = pdata.dup;
+        static if(btype != BufferType.Static)
+            changeMap.length = _data.length;
+            
+        glGenBuffers(1, &_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, _buffer);
+        glBufferData(GL_ARRAY_BUFFER, rawData.length, rawData.ptr, btype.mapBufferTypeToGL);
+    }
 
-	/// Filling the buffer with range of elements $(B r)
-	/**
-	*	Does nothing for static buffers
-	*/
-	void opSliceAssign(R)(R r)
-		if(isInputRange!R && is(ElementType!R == Element))
-	{
-		static if(btype != BufferType.Static)
-		{
-			_data[] = r[];
-		}
-	}
-	
-	/// Filling part of the buffer with range of elements $(B r)
-	/**
-	*	Does nothing for static buffers
-	*/
-	void opSliceAssign(R)(R r, size_t x, size_t y)
-		if(isInputRange!R && is(ElementType!R == Element))
-	{
-		static if(btype != BufferType.Static)
-		{
-			_data[x .. y] = r[];
-		}
-	}
-		
-	/// buffer[] operator 
-	Element[] opSlice()
-	{
-		return _data;
-	}
-	
-	const(Element[]) opSlice() const
-	{
-		return _data;
-	}
-	
-	/// Slicing operator
-	Element[] opSlice(size_t x, size_t y)
-	{
-		return _data[x .. y];
-	}
+    /// OpenGL buffer where data is stored on GPU side
+    GLenum id()
+    {
+        return _buffer;
+    }
+    
+    /// Getting raw data of the buffer
+    void[] rawData()
+    {
+        return cast(void[]) _data;
+    }
+        
+    /// Getting raw data of the buffer
+    const(void[]) rawData() const
+    {
+        return cast(void[]) _data;
+    }
+    
+    /// Getting data of the buffer
+    Element[] data()
+    {
+        return _data;
+    }
+    
+    /// Getting data of the buffer
+    const(Element[]) data() const
+    {
+        return _data;
+    }
+    
+    /// Getting buffer type
+    BufferType type()
+    {
+        return btype;
+    }
+    
+    /// If there is data to be loaded to GPU?
+    bool dirty()
+    {
+        static if(btype == BufferType.Static)
+        {
+            return false;
+        }
+        else
+        {
+            return _dirty;
+        }
+    }
+    
+    /// Loads changes from CPU side to GPU
+    void update()
+    {
+        static if(btype != BufferType.Static)
+        {
+            if(_dirty)
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, _buffer);
+                
+                // Scanning buffer for changes
+                for(size_t i = 0; i < changeMap.length; i++)
+                {
+                    if(changeMap[i])
+                    {
+                        size_t j = i;
+                        while(j < changeMap.length && changeMap[j]) j++;
+                        
+                        // Loading data
+                        glBufferSubData(GL_ARRAY_BUFFER
+                            , i*Element.sizeof, (j-i+1)*Element.sizeof
+                            , rawData[i*Element.sizeof .. (j+1)*Element.sizeof].ptr);
+                    }
+                }
+                
+                // Cleaning helping structures
+                _dirty = false;
+                changeMap.length = 0;
+                changeMap.length = _data.length;
+            }
+        }
+    }
+    
+    /// Updates element of the buffer at place $(B i)
+    /**
+    *   Does nothing for static buffers
+    */
+    Element opIndexAssign(Element e, size_t i)
+    {
+        static if(btype != BufferType.Static)
+        {
+            _data[i] = e;
+        }
+        return e;
+    }
+    
+    /// Reading element at place $(B i)
+    Element opIndex(size_t i)
+    {
+        return _data[i];
+    }
+    
+    const(Element) opIndex(size_t i) const
+    {
+        return _data[i];
+    }
+    
+    /// Filling the buffer with element $(B e)
+    /**
+    *   Does nothing for static buffers
+    */
+    Element opSliceAssign(Element e)
+    {
+        static if(btype != BufferType.Static)
+        {
+            _data[] = e;
+        }
+        return e;
+    }
+    
+    /// Filling part of the buffer with element $(B e)
+    /**
+    *   Does nothing for static buffers
+    */
+    Element opSliceAssign(Element e, size_t x, size_t y)
+    {
+        static if(btype != BufferType.Static)
+        {
+            _data[x .. y] = e;
+        }
+        return e;
+    }
 
-	const(Element[]) opSlice(size_t x, size_t y) const
-	{
-		return _data[x .. y];
-	}
-	
-	/// Operator $
-	size_t opDollar(size_t pos)() const
-	{
-		return _data.length;
-	}
-	
-	private
-	{
-		Element[] _data;
-		GLenum _buffer;
-		
-		static if(btype != BufferType.Static)
-		{
-			bool _dirty = true;
-			
-			/// Storing where changes were occurred
-			BitArray changeMap;
-		}
-	}
+    /// Filling the buffer with range of elements $(B r)
+    /**
+    *   Does nothing for static buffers
+    */
+    void opSliceAssign(R)(R r)
+        if(isInputRange!R && is(ElementType!R == Element))
+    {
+        static if(btype != BufferType.Static)
+        {
+            _data[] = r[];
+        }
+    }
+    
+    /// Filling part of the buffer with range of elements $(B r)
+    /**
+    *   Does nothing for static buffers
+    */
+    void opSliceAssign(R)(R r, size_t x, size_t y)
+        if(isInputRange!R && is(ElementType!R == Element))
+    {
+        static if(btype != BufferType.Static)
+        {
+            _data[x .. y] = r[];
+        }
+    }
+        
+    /// buffer[] operator 
+    Element[] opSlice()
+    {
+        return _data;
+    }
+    
+    const(Element[]) opSlice() const
+    {
+        return _data;
+    }
+    
+    /// Slicing operator
+    Element[] opSlice(size_t x, size_t y)
+    {
+        return _data[x .. y];
+    }
+
+    const(Element[]) opSlice(size_t x, size_t y) const
+    {
+        return _data[x .. y];
+    }
+    
+    /// Operator $
+    size_t opDollar(size_t pos)() const
+    {
+        return _data.length;
+    }
+    
+    private
+    {
+        Element[] _data = DataInitializer();
+        GLenum _buffer;
+        
+        static if(btype != BufferType.Static)
+        {
+            bool _dirty = true;
+            
+            /// Storing where changes were occurred
+            BitArray changeMap;
+        }
+    }
 }

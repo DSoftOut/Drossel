@@ -51,6 +51,7 @@ struct CIMesh
     *
     *   $(B T) have to implement render.shader.program compile-time interface.
     */
+    @trasient
     alias program(T) = T;
     // if(isShaderProgram!T)
 }

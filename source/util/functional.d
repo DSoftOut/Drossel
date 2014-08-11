@@ -647,7 +647,7 @@ template KeyValueList(Pairs...)
                 static assert(__traits(compiles, Key == Key), text(typeof(Key).stringof, " must have a opCmp!"));
             }
             
-            private template innerFind(T...)
+            private static template innerFind(T...)
             {
                 static if(T.length == 0) {
                     alias innerFind = ExpressionList!();
@@ -669,7 +669,15 @@ template KeyValueList(Pairs...)
                             static if(is(T[1])) {
                                 alias innerFind = T[1];
                             } else {
-                                enum innerFind = T[1];
+                                // hack to avoid compile-time lambdas
+                                // see http://forum.dlang.org/thread/lkl0lp$204h$1@digitalmars.com
+                                static if(__traits(compiles, {enum innerFind = T[1];}))
+                                {
+                                    enum innerFind = T[1];
+                                } else
+                                {
+                                    alias innerFind = T[1];
+                                }
                             }
                         } else {
                             alias innerFind = innerFind!(T[2 .. $]);
@@ -749,7 +757,7 @@ template KeyValueList(Pairs...)
         alias map = KeyValueList!(staticMap2!(F, Pairs));
     }
     
-    private template getKeys(T...)
+    private static template getKeys(T...)
     {
         static if(T.length == 0) {
             alias getKeys = ExpressionList!();
@@ -760,7 +768,7 @@ template KeyValueList(Pairs...)
     /// Getting expression list of all keys
     alias keys = getKeys!Pairs;
     
-    private template getValues(T...)
+    private static template getValues(T...)
     {
         static if(T.length == 0) {
             alias getValues = ExpressionList!();

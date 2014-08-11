@@ -66,7 +66,7 @@ unittest
 }
 
 /**
-*   Same as std.typeExpressionList.staticMap, but passes two arguments to the first template.
+*   Same as std.typetuple.staticMap, but passes two arguments to the first template.
 */
 template staticMap2(alias F, T...)
 {
@@ -97,7 +97,79 @@ unittest
 }
 
 /**
-*   Same as std.typeExpressionList.allSatisfy, but passes 2 arguments to the first template.
+*   Performs filtering of expression tuple $(B T) one by one by function or template $(B F). If $(B F)
+*   returns $(B true) the resulted element goes to returned expression tuple, else it is discarded.
+*/
+template staticFilter(alias F, T...)
+{
+    static if(T.length == 0)
+    {
+        alias staticFilter = ExpressionList!();
+    }
+    else
+    {
+        static if(F(T[0]))
+        {
+            alias staticFilter = ExpressionList!(T[0], staticFilter!(F, T[1 .. $]));
+        } 
+        else
+        {
+            alias staticFilter = ExpressionList!(staticFilter!(F, T[1 .. $]));
+        }
+    }
+}
+/// Example
+unittest
+{
+    import std.conv;
+    
+    bool testFunc(int val)
+    { 
+        return val <= 15;
+    }
+    
+    static assert(staticFilter!(testFunc, ExpressionList!(42, 108, 15, 2)) == ExpressionList!(15, 2));
+}
+
+/**
+*   Performs filtering of expression tuple $(B T) by pairs by function or template $(B F). If $(B F)
+*   returns $(B true) the resulted pair goes to returned expression tuple, else it is discarded.
+*/
+template staticFilter2(alias F, T...)
+{
+    static assert(T.length % 2 == 0);
+    
+    static if (T.length < 2)
+    {
+        alias staticFilter2 = ExpressionList!();
+    }
+    else
+    {
+        static if(F(T[0], T[1]))
+        {
+            alias staticFilter2 = ExpressionList!(T[0], T[1], staticFilter2!(F, T[2 .. $]));
+        }
+        else
+        {
+            alias staticFilter2 = ExpressionList!(staticFilter2!(F, T[2 .. $]));
+        }
+    }
+}
+/// Example
+unittest
+{
+    import std.conv;
+    
+    bool testFunc(string val1, int val2)
+    { 
+        return val1.to!int == val2;
+    }
+    
+    static assert(staticFilter2!(testFunc, ExpressionList!("42", 42, "2", 108, "15", 15, "1", 2)) == ExpressionList!("42", 42, "15", 15));
+}
+
+/**
+*   Same as std.typetuple.allSatisfy, but passes 2 arguments to the first template.
 */
 template allSatisfy2(alias F, T...)
 {

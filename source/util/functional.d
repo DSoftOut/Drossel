@@ -281,7 +281,7 @@ unittest
 /**
 *   Compile-time variant of std.range.robin for expression ExpressionLists.
 *   
-*   Template expects $(B StrictExpressionList) list as paramater and returns
+*   Template expects $(B StrictExpressionList) list as parameter and returns
 *   new expression list where first element is from first expression ExpressionList,
 *   second element is from second ExpressionList and so on, until one of input ExpressionLists
 *   doesn't end.
@@ -703,6 +703,9 @@ template KeyValueList(Pairs...)
 {
     static assert(Pairs.length % 2 == 0, text("KeyValueList is expecting even count of elements, not ", Pairs.length));
     
+    /// Number of entries in the map
+    enum length = Pairs.length / 2;
+    
     /**
     *   Getting values by keys. If $(B Keys) is a one key, then
     *   returns unwrapped value, else a ExpressionExpressionList of values.
@@ -850,6 +853,26 @@ template KeyValueList(Pairs...)
     }
     /// Getting expression list of all values
     alias values = getValues!Pairs;
+    
+    /** 
+    *   Filters entries with function or template $(B F), leaving entry only if
+    *   $(B F) returning $(B true).
+    */
+    static template filter(alias F)
+    {
+        alias filter = KeyValueList!(staticFilter2!(F, Pairs));
+    } 
+    
+    /** 
+    *   Filters entries with function or template $(B F) passing only a key from an entry, leaving entry only if
+    *   $(B F) returning $(B true).
+    */
+    static template filterByKey(alias F)
+    {
+        private alias newKeys = staticFilter!(F, keys);
+        private alias newValues = staticMap!(get, newKeys);
+        alias filterByKey = KeyValueList!(staticRobin!(StrictExpressionList!(newKeys, newValues)));
+    }
 }
 ///
 unittest
